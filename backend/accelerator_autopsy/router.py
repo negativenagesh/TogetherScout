@@ -11,6 +11,23 @@ router = APIRouter(prefix="/companies", tags=["companies"])
 async def list_companies():
     return get_all_companies()
 
+from fastapi import Request
+import httpx
+
+@router.post("/yc_search")
+async def yc_search(request: Request):
+    """Proxy endpoint to query YC's public Algolia index."""
+    data = await request.json()
+    url = "https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCCompany_production/query"
+    headers = {
+        "x-algolia-api-key": "NzllNTY5MzJiZGM2OTY2ZTQwMDEzOTNhYWZiZGRjODlhYzVkNjBmOGRjNzJiMWM4ZTU0ZDlhYTZjOTJiMjlhMWFuYWx5dGljc1RhZ3M9eWNkYyZyZXN0cmljdEluZGljZXM9WUNDb21wYW55X3Byb2R1Y3Rpb24lMkNZQ0NvbXBhbnlfQnlfTGF1bmNoX0RhdGVfcHJvZHVjdGlvbiZ0YWdGaWx0ZXJzPSU1QiUyMnljZGNfcHVibGljJTIyJTVE",
+        "x-algolia-application-id": "45BWZJ1SGC",
+        "content-type": "application/x-www-form-urlencoded"
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
+        return response.json()
+
 @router.post("/{company_id}/classify")
 async def trigger_classification(company_id: str):
     company = get_company(company_id)
@@ -31,3 +48,24 @@ async def trigger_classification(company_id: str):
     
     save_company(company)
     return company
+
+from typing import Optional
+from pydantic import BaseModel
+
+class ExternalCompanyInput(BaseModel):
+    name: str
+    one_liner: str
+    description: str
+    slug: Optional[str] = ""
+    website: Optional[str] = ""
+
+@router.post("/evaluate_external")
+async def evaluate_external_company(company: ExternalCompanyInput):
+    result = await classify_company(
+        company.name,
+        company.one_liner,
+        company.description,
+        company.slug,
+        company.website
+    )
+    return result

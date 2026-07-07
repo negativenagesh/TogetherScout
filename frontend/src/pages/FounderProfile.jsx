@@ -75,19 +75,19 @@ export default function FounderProfile() {
   if (loading || !founder) return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <Link to="/founders" className="text-sm text-blue-400 hover:underline">← Back to Founders</Link>
+    <div className="space-y-8 animate-in fade-in duration-300">
+      <Link to="/founders" className="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back to Founders</Link>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Profile Details */}
         <div className="col-span-1 space-y-6">
           <div className="bg-card p-6 rounded-lg border border-border shadow-sm">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-3xl mb-4 shadow-lg shadow-indigo-500/20">
+            <div className="w-20 h-20 rounded-full bg-foreground text-background flex items-center justify-center font-bold text-3xl mb-4">
               {founder.name.charAt(0)}
             </div>
             <h1 className="text-2xl font-bold mb-1">{founder.name}</h1>
-            <div className="text-indigo-400 font-medium capitalize text-sm mb-4">{founder.role} Role</div>
+            <div className="text-muted-foreground font-medium capitalize text-sm mb-4">{founder.role} Role</div>
             
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">
               {founder.bio}
@@ -105,7 +105,7 @@ export default function FounderProfile() {
             <button 
               onClick={runEvaluation} 
               disabled={running}
-              className={`mt-6 w-full py-3 rounded-md font-bold transition-all ${running ? 'bg-indigo-600/50 cursor-not-allowed animate-pulse' : 'bg-indigo-600 hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/40'}`}
+              className={`mt-6 w-full py-3 rounded-md font-bold transition-all ${running ? 'bg-foreground/50 text-background cursor-not-allowed' : 'bg-foreground hover:bg-white text-background'}`}
             >
               {running ? 'Running Evaluation...' : 'Run Agentic Evaluation'}
             </button>
@@ -117,19 +117,19 @@ export default function FounderProfile() {
           
           {/* Agent Trace */}
           {(running || trace.length > 0) && (
-            <div className="bg-black border border-gray-800 rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto shadow-inner relative">
-              <div className="absolute top-0 right-0 bg-gray-800 text-[10px] px-2 py-1 rounded-bl text-gray-400">AGENT TRACE</div>
+            <div className="bg-background border border-border rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto shadow-inner relative">
+              <div className="absolute top-0 right-0 bg-secondary text-[10px] px-2 py-1 rounded-bl text-muted-foreground border-b border-l border-border">AGENT TRACE</div>
               <div className="space-y-2 mt-4">
                 {trace.map((t, i) => (
                   <div key={i} className="flex gap-3">
-                    <span className="text-green-500">❯</span>
-                    <span className="text-gray-300">{t}</span>
+                    <span className="text-foreground">❯</span>
+                    <span className="text-muted-foreground">{t}</span>
                   </div>
                 ))}
                 {running && (
                   <div className="flex gap-3 animate-pulse">
-                    <span className="text-green-500">❯</span>
-                    <span className="text-gray-500">Agent is thinking...</span>
+                    <span className="text-foreground">❯</span>
+                    <span className="text-muted-foreground">Agent is thinking...</span>
                   </div>
                 )}
                 <div ref={traceEndRef} />
@@ -146,7 +146,7 @@ export default function FounderProfile() {
                   <div className="text-sm text-muted-foreground">Rubric: {evaluation.rubric_used.substring(0, 50)}...</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-4xl font-black bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">{evaluation.overall_score}</div>
+                  <div className="text-4xl font-black text-foreground">{evaluation.overall_score}</div>
                   <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest mt-1">Score</div>
                 </div>
               </div>
@@ -162,7 +162,7 @@ export default function FounderProfile() {
                           <span className="font-bold">{score}/10</span>
                         </div>
                         <div className="w-full bg-secondary rounded-full h-2">
-                          <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(score/10)*100}%` }}></div>
+                          <div className="bg-foreground h-2 rounded-full" style={{ width: `${(score/10)*100}%` }}></div>
                         </div>
                       </div>
                     ))}
@@ -172,12 +172,12 @@ export default function FounderProfile() {
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-semibold text-sm uppercase text-muted-foreground tracking-wider mb-2">Rationale</h4>
-                    <p className="text-sm italic text-gray-300 leading-relaxed border-l-2 border-indigo-500 pl-3">"{evaluation.rationale}"</p>
+                    <p className="text-sm italic text-muted-foreground leading-relaxed border-l-2 border-foreground pl-3">"{evaluation.rationale}"</p>
                   </div>
                   
                   <div>
                     <h4 className="font-semibold text-sm uppercase text-muted-foreground tracking-wider mb-2">Recommendation</h4>
-                    <div className="inline-block px-4 py-2 rounded-lg font-bold text-sm bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.1)]">
+                    <div className="inline-block px-4 py-2 rounded-lg font-bold text-sm bg-foreground text-background border border-border">
                       {evaluation.recommendation}
                     </div>
                   </div>

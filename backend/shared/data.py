@@ -80,6 +80,86 @@ def seed_data():
     )
     save_company(c2)
 
+    c3 = Company(
+        id="c3",
+        name="NeuroHealth",
+        one_liner="AI diagnostics for brain scans",
+        description="Using advanced deep learning models to detect early signs of Alzheimer's from MRI scans.",
+        source="Y Combinator",
+        batch="W23",
+        batch_year="2023",
+        status="Active",
+        stage="Early",
+        region="US",
+        country="USA",
+        city="Boston",
+        team_size=25,
+        is_hiring=True,
+        website="https://neurohealth.ai",
+        thesis_category=["healthcare"],
+    )
+    save_company(c3)
+
+    c4 = Company(
+        id="c4",
+        name="GreenGrid",
+        one_liner="Decentralized energy trading platform",
+        description="Peer-to-peer marketplace for residential solar energy trading.",
+        source="Techstars",
+        batch="S23",
+        batch_year="2023",
+        status="Active",
+        stage="Seed",
+        region="Europe",
+        country="Germany",
+        city="Berlin",
+        team_size=8,
+        is_hiring=False,
+        website="https://greengrid.energy",
+        thesis_category=["climate"],
+    )
+    save_company(c4)
+
+    c5 = Company(
+        id="c5",
+        name="VantageData",
+        one_liner="Automated data lineage for enterprise",
+        description="End-to-end data observability and lineage tracking for complex data pipelines.",
+        source="Sequoia Surge",
+        batch="09",
+        batch_year="2024",
+        status="Active",
+        stage="Seed",
+        region="India",
+        country="India",
+        city="Bangalore",
+        team_size=12,
+        is_hiring=True,
+        website="https://vantagedata.io",
+        thesis_category=["data-infrastructure"],
+    )
+    save_company(c5)
+
+    c6 = Company(
+        id="c6",
+        name="DefiLend",
+        one_liner="Institutional DeFi lending protocol",
+        description="Providing uncollateralized crypto loans to verified institutions with compliance first approach.",
+        source="a16z Crypto Startup School",
+        batch="24",
+        batch_year="2024",
+        status="Active",
+        stage="Seed",
+        region="US",
+        country="USA",
+        city="SF",
+        team_size=6,
+        is_hiring=True,
+        website="https://defilend.xyz",
+        thesis_category=["web3"],
+    )
+    save_company(c6)
+
     # Founders
     f1 = Founder(
         id="f1",

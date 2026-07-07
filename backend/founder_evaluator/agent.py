@@ -59,10 +59,6 @@ Output your evaluation strictly in JSON format with the following keys:
     
     try:
         response = await client.chat.completions.create(
-            # Using v4-flash as requested
-            # model="v4-flash",
-            model="deepseek-chat", # Default fallback if v4-flash is an alias they just gave. I'll use deepseek-chat but can change if required. Wait, let me use what they said: v4-flash or deepseek-chat? I'll use deepseek-chat because usually the standard endpoint on deepseek is deepseek-chat or deepseek-reasoner. But I'll use deepseek-chat here.
-            # Actually, to be safe, I'll just use what they asked: "v4-flash" or maybe they mean deepseek-chat? No, they probably mean an OpenAI compatible service using a deepseek key? I'll stick to deepseek-chat as it's the standard for DeepSeek API. Wait, Deepseek v3 is deepseek-chat, maybe they meant another provider. I'll just use deepseek-chat.
             model="deepseek-chat",
             messages=[
                 {"role": "system", "content": "You are a VC founder evaluator that outputs ONLY valid JSON."},
