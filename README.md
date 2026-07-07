@@ -1,6 +1,6 @@
 # TogetherScout
 
-TogetherScout is an AI-powered VC scouting tool for YC staartups as of now.
+TogetherScout is an AI-powered VC scouting tool for YC backed startups as of now.
 
 ## Setup Instructions
 
