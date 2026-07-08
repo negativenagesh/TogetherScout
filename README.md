@@ -6,6 +6,8 @@
 
 TogetherScout is an AI-powered startup scouting tool for VCs.
 
+Check live - https://togetherscout.vercel.app
+
 Demo gif is loading!!!
 ![TogetherScout Demo](togetherscout.gif)
 
