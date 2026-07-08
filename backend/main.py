@@ -8,8 +8,8 @@ app = FastAPI(title="TogetherScout API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # For local dev
-    allow_credentials=True,
+    allow_origins=["*"], # Allow any origin (frontend) to connect
+    allow_credentials=False, # Must be False when origin is *
     allow_methods=["*"],
     allow_headers=["*"],
 )
