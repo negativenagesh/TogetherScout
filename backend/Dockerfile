@@ -10,7 +10,7 @@ COPY pyproject.toml uv.lock ./
 COPY backend/pyproject.toml ./backend/
 
 # Install dependencies using uv
-RUN uv sync --frozen
+RUN uv sync --frozen --package backend --no-install-project
 
 # Copy the rest of the application
 COPY . .
