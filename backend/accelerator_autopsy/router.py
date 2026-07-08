@@ -28,6 +28,20 @@ async def yc_search(request: Request):
         response = await client.post(url, headers=headers, json=data)
         return response.json()
 
+@router.post("/founders_yc_search")
+async def founders_yc_search(request: Request):
+    """Proxy endpoint to query YC's public Algolia index for Founders."""
+    data = await request.json()
+    url = "https://45BWZJ1SGC-dsn.algolia.net/1/indexes/YCUsers_production/query"
+    headers = {
+        "x-algolia-api-key": "MTlmOGM5MTk5MjVlYWUyMDg4MGIzZDY4ODUzZTQ2ZWEzZWFlMjI0MTRhNTY2OGUyMTEwNTQ5NGVhZTdmYmFmNWFuYWx5dGljc1RhZ3M9eWNkYyZyZXN0cmljdEluZGljZXM9WUNVc2Vyc19wcm9kdWN0aW9uJnRhZ0ZpbHRlcnM9JTVCJTIyeWNkY19wdWJsaWMlMjIlNUQ=",
+        "x-algolia-application-id": "45BWZJ1SGC",
+        "content-type": "application/x-www-form-urlencoded"
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, json=data)
+        return response.json()
+
 from .topstartups import scrape_topstartups
 
 @router.post("/topstartups_search")
@@ -81,3 +95,31 @@ async def evaluate_external_company(company: ExternalCompanyInput):
         company.website
     )
     return result
+
+from ..shared.models import Founder, FounderEvaluation, MetricBreakdown
+from ..shared.data import get_founder, save_founder
+from ..founder_evaluator.founder_agent import evaluate_founder_agent
+import datetime
+
+@router.post("/founders/{founder_id}/evaluate")
+async def evaluate_founder_endpoint(founder: Founder):
+    # This endpoint receives the founder object directly from the frontend
+    # Since we don't sync all Algolia founders to DB initially, we just accept the body.
+    
+    result = await evaluate_founder_agent(founder)
+    
+    founder.evaluation = result
+    save_founder(founder)
+    
+    return founder
+
+from ..founder_evaluator.founder_agent import fetch_yc_context
+
+@router.post("/founders/bio")
+async def get_founder_bio_endpoint(founder: Founder):
+    context = await fetch_yc_context(founder)
+    return {
+        "founder_bio": context.get("founder_bio"),
+        "linkedin_url": context.get("linkedin_url"),
+        "twitter_url": context.get("twitter_url")
+    }

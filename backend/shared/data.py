@@ -160,37 +160,4 @@ def seed_data():
     )
     save_company(c6)
 
-    # Founders
-    f1 = Founder(
-        id="f1",
-        name="Alice Hacker",
-        company_ids=["c1"],
-        role="technical",
-        bio="10x developer, formerly at Stripe and Google. Built large scale distributed systems.",
-        github_url="https://github.com/alice",
-        batch="W24",
-        diaspora_flag=True
-    )
-    save_founder(f1)
-
-    f2 = Founder(
-        id="f2",
-        name="Bob Builder",
-        company_ids=["c1"],
-        role="business",
-        bio="GTM operator, 2x founder, previously scaled revenue to $10M at SaaS co.",
-        batch="W24",
-        diaspora_flag=False
-    )
-    save_founder(f2)
-
-    f3 = Founder(
-        id="f3",
-        name="Charlie Researcher",
-        company_ids=["c2"],
-        role="research",
-        bio="PhD in ML from Stanford. 15 papers in NLP.",
-        batch="S24",
-        diaspora_flag=True
-    )
-    save_founder(f3)
+    pass

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 from enum import Enum
 
@@ -42,20 +42,30 @@ class Company(BaseModel):
     together_fit_rationale: Optional[str] = None
     last_updated: Optional[str] = None
 
+class MetricBreakdown(BaseModel):
+    metric_name: str
+    score: int
+    rationale: str
+
+class FounderEvaluation(BaseModel):
+    overall_score: int = Field(0, description="Overall conviction score out of 100")
+    overall_rationale: str = Field("", description="A 3-4 sentence paragraph summarizing the holistic thesis on this founder")
+    metrics_breakdown: List[MetricBreakdown] = []
+
 class Founder(BaseModel):
     id: str
-    name: str
-    company_ids: List[str] = []
-    role: RoleEnum
-    bio: str
-    past_companies: List[str] = []
-    education: List[str] = []
+    first_name: str
+    last_name: str
+    avatar_thumb: Optional[str] = None
+    current_company: Optional[str] = None
+    company_slug: Optional[str] = None
+    current_title: Optional[str] = None
+    yc_industries: List[str] = []
+    yc_titles: List[str] = []
+    batches: List[str] = []
     linkedin_url: Optional[str] = None
-    github_url: Optional[str] = None
     twitter_url: Optional[str] = None
-    photo_url: Optional[str] = None
-    batch: str
-    diaspora_flag: bool = False
+    evaluation: Optional[FounderEvaluation] = None
 
 class Evaluation(BaseModel):
     id: str

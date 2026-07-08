@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Companies from './pages/Companies';
 import Founders from './pages/Founders';
-import FounderProfile from './pages/FounderProfile';
 
 function Layout({ children }) {
   return (
@@ -31,7 +30,6 @@ function App() {
           <Route path="/" element={<Companies />} />
           <Route path="/companies" element={<Companies />} />
           <Route path="/founders" element={<Founders />} />
-          <Route path="/founders/:id" element={<FounderProfile />} />
         </Routes>
       </Layout>
     </Router>
