@@ -3,7 +3,7 @@ import json
 import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from ..shared.smatbot_llm_client import smatbot_llm_call
+from ..shared.nvidia_llm_client import nvidia_llm_call
 
 load_dotenv()
 
@@ -93,12 +93,8 @@ async def classify_company(name: str, one_liner: str, description: str, slug: st
     )
     
     try:
-        system_prompt = """You are an elite VC classification assistant.
-## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
-- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
-- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
-- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
-        content = await smatbot_llm_call(prompt, system_prompt)
+        system_prompt = "You are an elite VC classification assistant. Output ONLY a valid JSON object matching the requested schema."
+        content = await nvidia_llm_call(prompt, system_prompt)
         # Try to extract JSON from the response
         json_match = content
         if '{' in content:

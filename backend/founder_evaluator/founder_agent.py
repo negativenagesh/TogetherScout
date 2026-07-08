@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from firecrawl import AsyncFirecrawlApp
 from ..shared.models import Founder, FounderEvaluation, MetricBreakdown
-from ..shared.smatbot_llm_client import smatbot_llm_call
+from ..shared.nvidia_llm_client import nvidia_llm_call
 
 load_dotenv()
 
@@ -140,14 +140,10 @@ Output your response strictly as JSON that matches this schema:
 }
 """
 
-    system_prompt = """You are an elite Silicon Valley Venture Capitalist evaluating a startup founder.
-## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
-- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
-- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
-- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
+    system_prompt = "You are an elite Silicon Valley Venture Capitalist evaluating a startup founder. Output ONLY a valid JSON object matching the requested schema."
 
     try:
-        content = await smatbot_llm_call(prompt, system_prompt)
+        content = await nvidia_llm_call(prompt, system_prompt)
         # Try to extract JSON from the response (it may have extra text around it)
         json_match = content
         if '{' in content:

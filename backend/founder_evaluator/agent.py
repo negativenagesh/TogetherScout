@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from .tools import fetch_github_stats
 from ..shared.models import Founder, Evaluation
 from ..shared.data import save_evaluation
-from ..shared.smatbot_llm_client import smatbot_llm_call
+from ..shared.nvidia_llm_client import nvidia_llm_call
 import uuid
 import datetime
 
@@ -56,12 +56,8 @@ Output your evaluation strictly in JSON format with the following keys:
     yield "data: " + json.dumps({"type": "step", "content": f"Calling AI Engine..."}) + "\n\n"
     
     try:
-        system_prompt = """You are an elite Silicon Valley Venture Capitalist evaluating a startup founder.
-## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
-- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
-- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
-- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
-        content = await smatbot_llm_call(prompt, system_prompt)
+        system_prompt = "You are an elite Silicon Valley Venture Capitalist evaluating a startup founder. Output ONLY a valid JSON object matching the requested schema."
+        content = await nvidia_llm_call(prompt, system_prompt)
         yield "data: " + json.dumps({"type": "step", "content": "Received reasoning from AI Engine."}) + "\n\n"
         
         # Try to extract JSON from the response

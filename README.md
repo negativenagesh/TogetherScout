@@ -16,8 +16,8 @@ TogetherScout is an AI-powered VC scouting tool for YC backed startups as of now
 
 The easiest way to run the application is using Docker Compose.
 
-1. Ensure your DEEPSEEK_API_KEY is exported in your environment:
-   export DEEPSEEK_API_KEY=your_api_key_here
+1. Ensure your NVIDIA_API_KEY is exported in your environment:
+   export NVIDIA_API_KEY=your_api_key_here
 
 2. Build and start the containers:
    docker-compose up --build
@@ -37,7 +37,7 @@ If you prefer to run the components manually without Docker:
 
 1. cd backend
 2. uv sync
-3. export DEEPSEEK_API_KEY=your_api_key_here
+3. export NVIDIA_API_KEY=your_api_key_here
 4. uv run uvicorn main:app --reload --port 8000
 
 #### Frontend
