@@ -1,17 +1,15 @@
 import os
 import json
 import asyncio
-from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from .tools import fetch_github_stats
 from ..shared.models import Founder, Evaluation
 from ..shared.data import save_evaluation
+from ..shared.smatbot_llm_client import smatbot_llm_call
 import uuid
 import datetime
 
 load_dotenv()
-
-client = AsyncOpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
 
 def get_rubric(role: str) -> str:
     if role == "technical":
@@ -55,21 +53,24 @@ Output your evaluation strictly in JSON format with the following keys:
 - "recommendation": "Strong Yes", "Yes", "Wait", or "No".
 """
 
-    yield "data: " + json.dumps({"type": "step", "content": f"Calling DeepSeek API with model v4-flash..."}) + "\n\n"
+    yield "data: " + json.dumps({"type": "step", "content": f"Calling AI Engine..."}) + "\n\n"
     
     try:
-        response = await client.chat.completions.create(
-            model="deepseek-chat",
-            messages=[
-                {"role": "system", "content": "You are a VC founder evaluator that outputs ONLY valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        content = response.choices[0].message.content
-        yield "data: " + json.dumps({"type": "step", "content": "Received reasoning from LLM."}) + "\n\n"
+        system_prompt = """You are an elite Silicon Valley Venture Capitalist evaluating a startup founder.
+## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
+- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
+- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
+- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
+        content = await smatbot_llm_call(prompt, system_prompt)
+        yield "data: " + json.dumps({"type": "step", "content": "Received reasoning from AI Engine."}) + "\n\n"
         
-        result = json.loads(content)
+        # Try to extract JSON from the response
+        json_match = content
+        if '{' in content:
+            start = content.index('{')
+            end = content.rindex('}') + 1
+            json_match = content[start:end]
+        result = json.loads(json_match)
         
         eval_obj = Evaluation(
             id=str(uuid.uuid4()),

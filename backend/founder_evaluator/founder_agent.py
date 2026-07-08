@@ -2,14 +2,12 @@ import os
 import json
 import httpx
 from bs4 import BeautifulSoup
-from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from firecrawl import AsyncFirecrawlApp
 from ..shared.models import Founder, FounderEvaluation, MetricBreakdown
+from ..shared.smatbot_llm_client import smatbot_llm_call
 
 load_dotenv()
-
-client = AsyncOpenAI(api_key=os.getenv("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")
 
 async def fetch_yc_context(founder: Founder):
     """Scrapes the YC company page to find the founder's detailed bio, links, and company info."""
@@ -93,14 +91,15 @@ Industry: {', '.join(founder.yc_industries) if founder.yc_industries else 'Unkno
         try:
             fc_app = AsyncFirecrawlApp(api_key=fc_api_key)
             if founder.linkedin_url:
-                try:
-                    # FireCrawl might still be blocked on LinkedIn, but we attempt it gracefully
-                    res = await fc_app.scrape_url(founder.linkedin_url, formats=['markdown'])
-                    markdown_data = res.get('markdown', '')
-                    if markdown_data and "Failed to scrape" not in markdown_data:
-                        context += f"\n[Scraped LinkedIn Content via FireCrawl]\n{markdown_data[:2500]}\n"
-                except Exception as e:
-                    print(f"FireCrawl LinkedIn scrape failed: {e}")
+                pass
+                # try:
+                #     # FireCrawl might still be blocked on LinkedIn, but we attempt it gracefully
+                #     res = await fc_app.scrape_url(founder.linkedin_url, formats=['markdown'])
+                #     markdown_data = res.get('markdown', '')
+                #     if markdown_data and "Failed to scrape" not in markdown_data:
+                #         context += f"\n[Scraped LinkedIn Content via FireCrawl]\n{markdown_data[:2500]}\n"
+                # except Exception as e:
+                #     print(f"FireCrawl LinkedIn scrape failed: {e}")
             
             if founder.twitter_url:
                 try:
@@ -141,19 +140,21 @@ Output your response strictly as JSON that matches this schema:
 }
 """
 
-    response = await client.chat.completions.create(
-        model="deepseek-chat",
-        messages=[
-            {"role": "system", "content": "You are an elite Silicon Valley Venture Capitalist evaluating a startup founder. Output ONLY valid JSON."},
-            {"role": "user", "content": prompt}
-        ],
-        response_format={"type": "json_object"},
-        temperature=0.2
-    )
+    system_prompt = """You are an elite Silicon Valley Venture Capitalist evaluating a startup founder.
+## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
+- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
+- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
+- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
 
     try:
-        content = response.choices[0].message.content
-        result = json.loads(content)
+        content = await smatbot_llm_call(prompt, system_prompt)
+        # Try to extract JSON from the response (it may have extra text around it)
+        json_match = content
+        if '{' in content:
+            start = content.index('{')
+            end = content.rindex('}') + 1
+            json_match = content[start:end]
+        result = json.loads(json_match)
         metrics = []
         for m in result.get("metrics_breakdown", []):
             metrics.append(MetricBreakdown(

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const BATCHES = [
   "Winter 2027", "Fall 2026", "Summer 2026", "Spring 2026", "Winter 2026",
@@ -115,7 +116,7 @@ export default function Companies() {
     }
 
     setLoading(true);
-    fetch('http://localhost:8000/api/companies/yc_search', {
+    fetch(`${API_BASE_URL}/api/companies/yc_search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ params: params.toString() })
@@ -139,7 +140,7 @@ export default function Companies() {
     // TopStartups uses 1-indexed pages
     const currentTsPage = page + 1;
     
-    fetch('http://localhost:8000/api/companies/topstartups_search', {
+    fetch(`${API_BASE_URL}/api/companies/topstartups_search`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
@@ -170,7 +171,7 @@ export default function Companies() {
   const handleAutopsy = async (company) => {
     setEvaluating(prev => ({ ...prev, [company.id]: true }));
     try {
-      const res = await fetch(`http://localhost:8000/api/companies/evaluate_external`, {
+      const res = await fetch(`${API_BASE_URL}/api/companies/evaluate_external`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

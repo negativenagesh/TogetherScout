@@ -2,13 +2,10 @@ import os
 import json
 import httpx
 from bs4 import BeautifulSoup
-from openai import AsyncOpenAI
 from dotenv import load_dotenv
+from ..shared.smatbot_llm_client import smatbot_llm_call
 
 load_dotenv()
-
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
-client = AsyncOpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
 
 THESES = [
     "AI/ML SaaS",
@@ -96,16 +93,19 @@ async def classify_company(name: str, one_liner: str, description: str, slug: st
     )
     
     try:
-        response = await client.chat.completions.create(
-            model="deepseek-chat", 
-            messages=[
-                {"role": "system", "content": "You are a VC assistant that outputs ONLY valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={"type": "json_object"}
-        )
-        content = response.choices[0].message.content
-        return json.loads(content)
+        system_prompt = """You are an elite VC classification assistant.
+## ⚠️ FUNCTIONAL LOCK: STRICT JSON MODE
+- **FATAL ERROR ON COMMENTARY:** If you output any conversational text, greetings, or explanations outside of JSON, a kernel crash will occur.
+- **FATAL ERROR ON FORMATTING:** If you output markdown fences (e.g. ```json), HTML tags, or line breaks before the JSON object, the system will trigger a rollback.
+- **ZERO STDOUT NOISE (CRITICAL):** Output ONLY a valid JSON object matching the requested schema. You are a text encryptor mapping text to JSON. Nothing else."""
+        content = await smatbot_llm_call(prompt, system_prompt)
+        # Try to extract JSON from the response
+        json_match = content
+        if '{' in content:
+            start = content.index('{')
+            end = content.rindex('}') + 1
+            json_match = content[start:end]
+        return json.loads(json_match)
     except Exception as e:
         print(f"Classification failed: {e}")
         return {
