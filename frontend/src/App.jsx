@@ -8,19 +8,12 @@ import { API_BASE_URL } from './config';
 function Layout({ children }) {
   const location = useLocation();
   const isLanding = location.pathname === '/';
-  const [serverStatus, setServerStatus] = useState('checking');
+  const [serverStatus, setServerStatus] = useState('waking');
 
   useEffect(() => {
     let isMounted = true;
     
-    // Show the waking up banner if the server takes more than 1 second to respond
-    const timeoutId = setTimeout(() => {
-      if (isMounted) {
-        setServerStatus(prev => prev === 'checking' ? 'waking' : prev);
-      }
-    }, 1000);
-
-    // Ping the backend health check route
+    // Ping the backend health check route immediately
     fetch(`${API_BASE_URL}/`)
       .then(res => {
         if (isMounted) setServerStatus('ready');
@@ -31,9 +24,9 @@ function Layout({ children }) {
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
     };
   }, []);
+  
   if (isLanding) {
     return <>{children}</>;
   }
