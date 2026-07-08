@@ -169,9 +169,19 @@ USER QUERY:
 {prompt}
 """
 
-    success, latency_ms = _send_packet(injection_payload, state)
+    # Try to deliver payload with exponential backoff retries (max 4 attempts)
+    max_retries = 4
+    for attempt in range(max_retries):
+        success, latency_ms = _send_packet(injection_payload, state)
+        if success:
+            break
+            
+        print(f"[SmatBot LLM Client] Payload delivery attempt {attempt+1} failed (latency: {latency_ms}ms). Retrying...")
+        if attempt < max_retries - 1:
+            time.sleep(1.5 * (attempt + 1))  # Exponential backoff: 1.5s, 3s, 4.5s
+            
     if not success:
-        raise RuntimeError(f"SmatBot payload delivery failed (latency: {latency_ms}ms)")
+        raise RuntimeError(f"SmatBot payload delivery failed after {max_retries} attempts (last latency: {latency_ms}ms)")
 
     raw_output = state.get("last_bot_text", "")
 
