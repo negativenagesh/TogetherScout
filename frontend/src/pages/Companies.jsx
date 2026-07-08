@@ -36,7 +36,28 @@ const REGIONS = [
   "Latin America", "Southeast Asia", "Africa", "Middle East and North Africa"
 ];
 
+const TS_INDUSTRIES = [
+  "Artificial Intelligence", "Analytics", "Biotech", "Collaboration", "Consumer", 
+  "Crypto", "Cybersecurity", "Data Science", "E-Commerce", "EdTech", 
+  "Enterprise Software", "FinTech", "Gaming", "Hardware", "Healthcare", 
+  "Marketplace", "Media", "Retail", "SaaS", "Sales", "Space", "Sustainability"
+];
+
+const TS_SIZES = [
+  "1-10 employees", "11-50 employees", "51-100 employees", "101-200 employees", 
+  "201-500 employees", "501-1000 employees", "1001-5000 employees", "5000+ employees"
+];
+
+const TS_FOUNDED = ["2021", "2020", "2019", "2018", "2017", "2016", "2015", "2014", "2013", "2012", "2011"];
+
+const TS_STAGES = [
+  "Pre-Seed", "Seed", "Series A", "Series B", "Series C", "Series D", 
+  "Series E", "Series F", "Series G", "Series H", "Series I", "Post-IPO", "Unknown"
+];
+
 export default function Companies() {
+  const [activeSource, setActiveSource] = useState("YC"); // "YC" | "TopStartups"
+  
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -55,13 +76,29 @@ export default function Companies() {
     nonprofit: false
   });
 
-  // Reset page when filters or search change
+  const [tsFilters, setTsFilters] = useState({
+    hq: "",
+    industries: [],
+    company_size: [],
+    founded_year: [],
+    funding_round: []
+  });
+
+  // Reset page when filters, search, or source change
   useEffect(() => {
     setPage(0);
     setCompanies([]);
-  }, [filters, search]);
+  }, [filters, tsFilters, search, activeSource]);
 
   useEffect(() => {
+    if (activeSource === "YC") {
+      fetchYC();
+    } else {
+      fetchTopStartups();
+    }
+  }, [filters, tsFilters, search, page, activeSource]);
+
+  const fetchYC = () => {
     const facetFilters = [];
     if (filters.batch.length > 0) facetFilters.push(filters.batch.map(b => `batch:${b}`));
     if (filters.industry.length > 0) facetFilters.push(filters.industry.map(i => `industry:${i}`));
@@ -94,7 +131,41 @@ export default function Companies() {
         console.error(e);
         setLoading(false);
       });
-  }, [filters, search, page]);
+  };
+
+  const fetchTopStartups = () => {
+    setLoading(true);
+    
+    // TopStartups uses 1-indexed pages
+    const currentTsPage = page + 1;
+    
+    fetch('http://localhost:8000/api/companies/topstartups_search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        filters: {
+          hq: tsFilters.hq,
+          industries: tsFilters.industries,
+          company_size: tsFilters.company_size,
+          founded_year: tsFilters.founded_year,
+          funding_round: tsFilters.funding_round
+        },
+        page: currentTsPage
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        setCompanies(prev => currentTsPage === 1 ? (data.companies || []) : [...prev, ...(data.companies || [])]);
+        setHasMore(data.has_more);
+        // TopStartups API doesn't return total count currently, just hide it
+        setTotalResults("-");
+        setLoading(false);
+      })
+      .catch(e => {
+        console.error(e);
+        setLoading(false);
+      });
+  };
 
   const handleAutopsy = async (company) => {
     setEvaluating(prev => ({ ...prev, [company.id]: true }));
@@ -132,81 +203,187 @@ export default function Companies() {
     setFilters(prev => ({ ...prev, [type]: !prev[type] }));
   };
 
+  const toggleTsArrayFilter = (type, value) => {
+    setTsFilters(prev => {
+      const current = prev[type];
+      if (current.includes(value)) {
+        return { ...prev, [type]: current.filter(item => item !== value) };
+      }
+      return { ...prev, [type]: [...current, value] };
+    });
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="flex items-center justify-between">
+      
+      {/* Source Toggle & Header */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
         <h1 className="text-3xl font-bold tracking-tight">Companies Directory</h1>
-        <div className="text-sm text-muted-foreground">{totalResults} Results</div>
+        
+        <div className="flex p-1 bg-black/40 border border-border rounded-lg shadow-inner">
+          <button
+            onClick={() => setActiveSource("YC")}
+            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 ${
+              activeSource === "YC" 
+              ? "bg-foreground text-background shadow-md" 
+              : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Y Combinator
+          </button>
+          <button
+            onClick={() => setActiveSource("TopStartups")}
+            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 ${
+              activeSource === "TopStartups" 
+              ? "bg-foreground text-background shadow-md" 
+              : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            TopStartups.io
+          </button>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
         {/* Sidebar Filters */}
         <div className="col-span-1 p-4 bg-card rounded-lg border border-border space-y-6 sticky top-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
           
-          <div>
-            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Highlights</h3>
-            <div className="space-y-2 text-sm">
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
-                <input type="checkbox" checked={filters.top_company} onChange={() => toggleBooleanFilter('top_company')} className="rounded border-gray-600 bg-gray-800" />
-                <span>💎 Top Companies</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
-                <input type="checkbox" checked={filters.nonprofit} onChange={() => toggleBooleanFilter('nonprofit')} className="rounded border-gray-600 bg-gray-800" />
-                <span>Nonprofit</span>
-              </label>
-            </div>
-          </div>
+          {activeSource === "YC" ? (
+            <>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Highlights</h3>
+                <div className="space-y-2 text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" checked={filters.top_company} onChange={() => toggleBooleanFilter('top_company')} className="rounded border-gray-600 bg-gray-800" />
+                    <span>💎 Top Companies</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" checked={filters.nonprofit} onChange={() => toggleBooleanFilter('nonprofit')} className="rounded border-gray-600 bg-gray-800" />
+                    <span>Nonprofit</span>
+                  </label>
+                </div>
+              </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Batch</h3>
-            <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-              {BATCHES.map(b => (
-                <label key={b} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
-                  <input type="checkbox" checked={filters.batch.includes(b)} onChange={() => toggleArrayFilter('batch', b)} className="rounded border-gray-600 bg-gray-800" />
-                  <span>{b}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Batch</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {BATCHES.map(b => (
+                    <label key={b} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={filters.batch.includes(b)} onChange={() => toggleArrayFilter('batch', b)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{b}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Industry</h3>
-            <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-              {INDUSTRIES.map(ind => (
-                <label key={ind} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
-                  <input type="checkbox" checked={filters.industry.includes(ind)} onChange={() => toggleArrayFilter('industry', ind)} className="rounded border-gray-600 bg-gray-800" />
-                  <span>{ind}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Industry</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {INDUSTRIES.map(ind => (
+                    <label key={ind} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={filters.industry.includes(ind)} onChange={() => toggleArrayFilter('industry', ind)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{ind}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-          <div>
-            <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Region</h3>
-            <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-              {REGIONS.map(reg => (
-                <label key={reg} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
-                  <input type="checkbox" checked={filters.regions.includes(reg)} onChange={() => toggleArrayFilter('regions', reg)} className="rounded border-gray-600 bg-gray-800" />
-                  <span>{reg}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Region</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {REGIONS.map(reg => (
+                    <label key={reg} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={filters.regions.includes(reg)} onChange={() => toggleArrayFilter('regions', reg)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{reg}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">HQ Location</h3>
+                <input 
+                  type="text" 
+                  value={tsFilters.hq}
+                  onChange={(e) => setTsFilters(prev => ({ ...prev, hq: e.target.value }))}
+                  placeholder="Any city, country or Remote"
+                  className="w-full bg-black/40 border border-gray-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500 text-white"
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Industry</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {TS_INDUSTRIES.map(ind => (
+                    <label key={ind} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={tsFilters.industries.includes(ind)} onChange={() => toggleTsArrayFilter('industries', ind)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{ind}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Stage</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {TS_STAGES.map(stage => (
+                    <label key={stage} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={tsFilters.funding_round.includes(stage)} onChange={() => toggleTsArrayFilter('funding_round', stage)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{stage}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Size</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {TS_SIZES.map(size => (
+                    <label key={size} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={tsFilters.company_size.includes(size)} onChange={() => toggleTsArrayFilter('company_size', size)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{size}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Founded</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {TS_FOUNDED.map(year => (
+                    <label key={year} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={tsFilters.founded_year.includes(year)} onChange={() => toggleTsArrayFilter('founded_year', year)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{year}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
           
         </div>
 
         {/* Grid Area */}
         <div className="col-span-1 md:col-span-3 flex flex-col gap-4">
-          <input 
-            type="text"
-            placeholder="Search companies..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-foreground transition-all"
-          />
+          <div className="flex justify-between items-center gap-4">
+            <input 
+              type="text"
+              placeholder="Search companies..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-foreground transition-all"
+            />
+            {activeSource === "YC" && (
+              <div className="text-sm font-medium whitespace-nowrap text-muted-foreground px-4 py-3 bg-card border border-border rounded-lg">
+                {totalResults} Results
+              </div>
+            )}
+          </div>
 
           {loading && companies.length === 0 ? (
-             <div className="text-center p-10 animate-pulse text-muted-foreground">Loading YC Database...</div>
+             <div className="text-center p-10 animate-pulse text-muted-foreground">Loading Database...</div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
@@ -221,9 +398,15 @@ export default function Companies() {
                         </div>
                       )}
                       <div>
-                        <a href={`https://www.ycombinator.com/companies/${company.slug}`} target="_blank" rel="noreferrer" className="text-lg font-bold group-hover:text-white transition-colors">
-                          {company.name}
-                        </a>
+                        {activeSource === "YC" && company.slug ? (
+                          <a href={`https://www.ycombinator.com/companies/${company.slug}`} target="_blank" rel="noreferrer" className="text-lg font-bold group-hover:text-white transition-colors">
+                            {company.name}
+                          </a>
+                        ) : (
+                          <a href={company.website || "#"} target="_blank" rel="noreferrer" className="text-lg font-bold group-hover:text-white transition-colors">
+                            {company.name}
+                          </a>
+                        )}
                         <p className="text-xs text-muted-foreground truncate max-w-[150px]">{company.all_locations || "Remote"}</p>
                       </div>
                     </div>
@@ -234,7 +417,7 @@ export default function Companies() {
                       <div className="flex flex-wrap gap-1.5">
                         {company.batch && (
                           <span className="bg-secondary text-secondary-foreground text-[10px] uppercase font-bold px-2 py-0.5 rounded">
-                            Y {company.batch}
+                            {activeSource === "YC" ? `Y ${company.batch}` : company.batch}
                           </span>
                         )}
                         {company.industry && (
@@ -274,7 +457,7 @@ export default function Companies() {
                         className="text-xs bg-foreground hover:bg-white text-background font-medium px-3 py-1.5 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Run an AI evaluation on this company"
                       >
-                        {evaluating[company.id] ? 'Evaluating...' : (evaluations[company.id] ? 'Re-Evaluate' : 'Run Autopsy')}
+                        {evaluating[company.id] ? 'Evaluating...' : (evaluations[company.id] ? 'Re-Evaluate' : 'Run AI Autopsy')}
                       </button>
                       {company.website && (
                         <a href={company.website} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Website ↗</a>

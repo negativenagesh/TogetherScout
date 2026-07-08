@@ -28,6 +28,18 @@ async def yc_search(request: Request):
         response = await client.post(url, headers=headers, json=data)
         return response.json()
 
+from .topstartups import scrape_topstartups
+
+@router.post("/topstartups_search")
+async def topstartups_search(request: Request):
+    """Endpoint to scrape topstartups.io based on filters."""
+    data = await request.json()
+    filters = data.get("filters", {})
+    page = data.get("page", 1)
+    
+    result = await scrape_topstartups(filters, page)
+    return result
+
 @router.post("/{company_id}/classify")
 async def trigger_classification(company_id: str):
     company = get_company(company_id)
