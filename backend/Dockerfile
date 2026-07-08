@@ -17,5 +17,5 @@ COPY . .
 
 EXPOSE 8000
 
-# Run the application using uv
-CMD ["uv", "run", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application using uv and respect the PORT environment variable (Render sets this)
+CMD ["sh", "-c", "uv run uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

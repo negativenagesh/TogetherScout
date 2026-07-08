@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: togetherscout-backend
+    env: docker
+    dockerfilePath: backend/Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: FIRECRAWL_API_KEY
+        sync: false
