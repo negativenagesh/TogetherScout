@@ -1,20 +1,23 @@
 import os
 import httpx
 import json
+from dotenv import load_dotenv
 
-NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+load_dotenv()
+
+NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY", os.getenv("NVIDIA_API_KEY"))
 
 async def nvidia_llm_call(prompt: str, system_prompt: str = "You are a helpful assistant.") -> str:
     """
     Calls the NVIDIA NIM API using stepfun-ai/step-3.7-flash.
     Returns the generated text.
     """
-    if not NVIDIA_API_KEY:
-        raise RuntimeError("NVIDIA_API_KEY environment variable is missing.")
+    if not NVIDIA_NIM_API_KEY:
+        raise RuntimeError("NVIDIA_NIM_API_KEY environment variable is missing.")
 
     invoke_url = "https://integrate.api.nvidia.com/v1/chat/completions"
     headers = {
-        "Authorization": f"Bearer {NVIDIA_API_KEY}",
+        "Authorization": f"Bearer {NVIDIA_NIM_API_KEY}",
         "Accept": "application/json",
         "Content-Type": "application/json"
     }

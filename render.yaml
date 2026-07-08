@@ -7,5 +7,5 @@ services:
     envVars:
       - key: FIRECRAWL_API_KEY
         sync: false
-      - key: NVIDIA_API_KEY
+      - key: NVIDIA_NIM_API_KEY
         sync: false
