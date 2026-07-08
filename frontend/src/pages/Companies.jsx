@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
@@ -218,14 +219,15 @@ export default function Companies() {
     <div className="space-y-6 animate-in fade-in duration-300">
       
       {/* NVIDIA Evaluation Banner */}
-      {Object.values(evaluating).some(Boolean) && (
-        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-3 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
-          <svg className="animate-spin h-5 w-5 text-blue-400" viewBox="0 0 24 24">
+      {Object.values(evaluating).some(Boolean) && document.getElementById('header-banner-portal') && createPortal(
+        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-1.5 rounded-full text-[13px] font-bold tracking-wide flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-300 w-full whitespace-nowrap shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+          <svg className="animate-spin h-4 w-4 text-blue-400" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Using free NVIDIA LLM endpoint. Please be patient as the AI Autopsy completes...
-        </div>
+          Using free NVIDIA LLM endpoint. Please be patient...
+        </div>,
+        document.getElementById('header-banner-portal')
       )}
 
       {/* Source Toggle & Header */}

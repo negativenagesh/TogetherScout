@@ -46,6 +46,7 @@ function Layout({ children }) {
         <Link to="/" className="text-3xl font-italiana tracking-tighter text-foreground flex items-center gap-2 hover:opacity-80 transition-opacity">
           TogetherScout
         </Link>
+        <div id="header-banner-portal" className="flex-grow flex justify-center px-4 max-w-2xl hidden md:flex z-50"></div>
         <nav className="flex gap-4 font-bold text-sm tracking-wide uppercase items-center">
           <Link to="/companies" className="px-5 py-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-md hover:bg-white hover:text-black transition-all duration-300 text-gray-300">
             Companies

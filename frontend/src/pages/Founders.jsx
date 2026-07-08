@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { API_BASE_URL } from '../config';
 
 const BATCHES = ["W27", "F26", "S26", "P26", "W26", "F25", "S25", "P25", "W25", "F24", "S24", "W24", "S23", "W23", "S22", "W22", "S21", "W21", "S20", "W20", "S19", "W19", "S18", "W18", "S17", "W17", "S16", "W16", "S15", "W15", "S14", "W14", "S13", "W13", "S12", "W12", "S11", "W11", "S10", "W10", "S09", "W09", "S08", "W08", "S07", "W07", "S06", "W06", "S05"];
@@ -163,14 +164,15 @@ export default function Founders() {
     <div className="space-y-6 animate-in fade-in duration-300">
       
       {/* NVIDIA Evaluation Banner */}
-      {Object.values(evaluating).some(Boolean) && (
-        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-3 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
-          <svg className="animate-spin h-5 w-5 text-blue-400" viewBox="0 0 24 24">
+      {Object.values(evaluating).some(Boolean) && document.getElementById('header-banner-portal') && createPortal(
+        <div className="bg-blue-500/10 border border-blue-500/20 text-blue-400 px-4 py-1.5 rounded-full text-[13px] font-bold tracking-wide flex items-center justify-center gap-2 animate-in fade-in zoom-in-95 duration-300 w-full whitespace-nowrap shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+          <svg className="animate-spin h-4 w-4 text-blue-400" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          Using free NVIDIA LLM endpoint. Please be patient as the Founder AI Autopsy completes...
-        </div>
+          Using free NVIDIA LLM endpoint. Please be patient...
+        </div>,
+        document.getElementById('header-banner-portal')
       )}
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
