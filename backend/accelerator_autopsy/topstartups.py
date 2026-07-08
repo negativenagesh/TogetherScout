@@ -1,7 +1,7 @@
 import httpx
 from bs4 import BeautifulSoup
 import urllib.parse
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str, Any]:
     base_url = "https://topstartups.io/"
@@ -35,7 +35,6 @@ async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str
                 
             name = name_el.text.strip()
             
-            # Website
             website = ""
             a_tag = card.find("a", id="startup-website-link")
             if a_tag and a_tag.get("href"):
@@ -43,32 +42,28 @@ async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str
                 if "?utm_source" in website:
                     website = website.split("?utm_source")[0]
                     
-            # Logo
             logo_url = ""
             img_tag = card.find("img")
             if img_tag and img_tag.get("src"):
                 logo_url = img_tag["src"]
                 
-            # Description (What they do)
             desc = ""
             p_tags = card.find_all("p")
             for p in p_tags:
                 b_tag = p.find("b")
                 if b_tag and "What they do" in b_tag.text:
                     desc_text = p.get_text(separator="\n").split("What they do:")[1]
-                    # Clean up the text by removing the industry tags at the bottom
                     desc = desc_text.split("\n")[1].strip()
                     break
                     
-            # Industries
             industries = []
             industry_tags = card.find_all("span", id="industry-tags")
             for tag in industry_tags:
                 industries.append(tag.text.strip())
                 
-            # HQ, Size, Founded
             hq = ""
             founded = ""
+            size = ""
             for p in p_tags:
                 b_tag = p.find("b")
                 if b_tag and "Quick facts:" in b_tag.text:
@@ -83,15 +78,40 @@ async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str
                 tag_text = tag.text.strip()
                 if tag_text.startswith("Founded:"):
                     founded = tag_text.replace("Founded:", "").strip()
+                else:
+                    size = tag_text
                     
-            # Funding (Stage)
             stage = ""
+            investors = []
             for p in p_tags:
                 b_tag = p.find("b")
                 if b_tag and "Funding:" in b_tag.text:
                     stage_tags = p.find_all("span", id="funding-tags")
                     if stage_tags:
-                        stage = stage_tags[0].text.strip()
+                        for tag in stage_tags:
+                            if "Series" in tag.text or "Seed" in tag.text or "IPO" in tag.text:
+                                stage = tag.text.strip()
+                            else:
+                                investors.append(tag.text.strip())
+
+            founders_text = ""
+            for p in p_tags:
+                b_tag = p.find("b")
+                if b_tag and "Founders:" in b_tag.text:
+                    founders_text_split = p.get_text(separator="\n").split("Founders:")
+                    if len(founders_text_split) > 1:
+                        founders_text = founders_text_split[1].strip()
+
+            linkedin_url = ""
+            social_links = card.find_all("a", id="social_media_link")
+            for s_link in social_links:
+                if "linkedin.com" in s_link.get("href", ""):
+                    linkedin_url = s_link.get("href")
+
+            jobs_url = ""
+            jobs_link = card.find("a", id="view-jobs")
+            if jobs_link and jobs_link.get("href"):
+                jobs_url = jobs_link["href"]
                         
             companies.append({
                 "id": website or name, # fallback
@@ -102,14 +122,20 @@ async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str
                 "one_liner": desc,
                 "long_description": desc,
                 "industry": industries[0] if industries else "",
+                "all_industries": industries,
                 "all_locations": hq,
                 "batch": stage or founded,
+                "team_size": size,
+                "founded_year": founded,
+                "investors": investors,
+                "founders_text": founders_text,
+                "linkedin_url": linkedin_url,
+                "jobs_url": jobs_url,
             })
         except Exception as e:
             print(f"Error parsing card: {e}")
             continue
             
-    # Check if there's a next page
     has_more = False
     pagination = soup.find("ul", class_="pagination")
     if pagination:

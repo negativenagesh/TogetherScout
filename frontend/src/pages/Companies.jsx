@@ -413,6 +413,21 @@ export default function Companies() {
                     
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-3">{company.one_liner || company.long_description}</p>
                     
+                    {activeSource === "TopStartups" && (
+                      <div className="mb-4">
+                        {company.founders_text && (
+                          <p className="text-xs text-muted-foreground mb-2">
+                            <span className="font-semibold text-gray-300">Founders:</span> {company.founders_text}
+                          </p>
+                        )}
+                        {company.team_size && (
+                          <p className="text-xs text-muted-foreground">
+                            <span className="font-semibold text-gray-300">Size:</span> {company.team_size}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
                     <div className="mt-auto flex flex-col gap-2">
                       <div className="flex flex-wrap gap-1.5">
                         {company.batch && (
@@ -420,11 +435,22 @@ export default function Companies() {
                             {activeSource === "YC" ? `Y ${company.batch}` : company.batch}
                           </span>
                         )}
-                        {company.industry && (
+                        {activeSource === "TopStartups" && company.all_industries ? (
+                          company.all_industries.map((ind, idx) => (
+                            <span key={idx} className="bg-secondary text-secondary-foreground text-[10px] uppercase px-2 py-0.5 rounded">
+                              {ind}
+                            </span>
+                          ))
+                        ) : company.industry && (
                           <span className="bg-secondary text-secondary-foreground text-[10px] uppercase px-2 py-0.5 rounded">
                             {company.industry}
                           </span>
                         )}
+                        {activeSource === "TopStartups" && company.investors && company.investors.map((inv, idx) => (
+                          <span key={`inv-${idx}`} className="bg-blue-900/50 text-blue-200 text-[10px] uppercase font-bold px-2 py-0.5 rounded">
+                            {inv}
+                          </span>
+                        ))}
                         {evaluations[company.id]?.us_india_relevance_flag && (
                           <span className="bg-foreground text-background font-medium text-[10px] uppercase px-2 py-0.5 rounded">
                             US-India
@@ -459,9 +485,17 @@ export default function Companies() {
                       >
                         {evaluating[company.id] ? 'Evaluating...' : (evaluations[company.id] ? 'Re-Evaluate' : 'Run AI Autopsy')}
                       </button>
-                      {company.website && (
-                        <a href={company.website} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Website ↗</a>
-                      )}
+                      <div className="flex gap-3 items-center">
+                        {company.linkedin_url && (
+                          <a href={company.linkedin_url} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-blue-400 transition-colors">LinkedIn ↗</a>
+                        )}
+                        {company.jobs_url && (
+                          <a href={company.jobs_url} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-green-400 transition-colors">Jobs ↗</a>
+                        )}
+                        {company.website && (
+                          <a href={company.website} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Website ↗</a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
