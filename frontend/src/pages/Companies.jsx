@@ -383,7 +383,7 @@ export default function Companies() {
           </div>
 
           {loading && companies.length === 0 ? (
-             <div className="text-center p-10 animate-pulse text-muted-foreground">Loading Database...</div>
+             <div className="text-center p-10 animate-pulse text-muted-foreground">Hunting for unicorns...</div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
