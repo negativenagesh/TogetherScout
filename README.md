@@ -1,5 +1,9 @@
 # TogetherScout
 
+[![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://togetherscout.vercel.app)
+[![GitHub stars](https://img.shields.io/github/stars/negativenagesh/TogetherScout.svg?style=for-the-badge)](https://github.com/negativenagesh/TogetherScout/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/negativenagesh/TogetherScout.svg?style=for-the-badge)](https://github.com/negativenagesh/TogetherScout/network/members)
+
 TogetherScout is an AI-powered startup scouting tool for VCs.
 
 Demo gif is loading!!!
