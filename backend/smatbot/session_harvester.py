@@ -57,7 +57,7 @@ class SessionHarvester:
         Harvest a single fresh cb_session by forging the initialization payload.
         
         This executes in < 0.5 seconds and bypasses all Playwright timeouts.
-        Returns: The server-issued cb_session string, or None if harvesting fails.
+        Returns: A dict with cb_session, user_agent, and ip, or None if harvesting fails.
         """
         import requests
 
@@ -112,7 +112,11 @@ class SessionHarvester:
                     session = data.get("cb_session")
                     if session and len(session) > 10:
                         print(f"  [+] HTTP Harvest Success: Spoofed device {device_print[:8]}...")
-                        return session
+                        return {
+                            "cb_session": session,
+                            "user_agent": headers["User-Agent"],
+                            "ip": headers["X-Forwarded-For"]
+                        }
                         
             except Exception as e:
                 print(f"  [-] HTTP Harvest failed: {e}")
@@ -124,10 +128,10 @@ class SessionHarvester:
         sessions = []
         for i in range(count):
             print(f"\n  [*] Harvesting session {i+1}/{count}...")
-            session = self.harvest_one()
-            if session:
-                sessions.append(session)
-                print(f"  [✅] Session {i+1}: {session[:30]}...")
+            res = self.harvest_one()
+            if res and res.get("cb_session"):
+                sessions.append(res["cb_session"])
+                print(f"  [✅] Session {i+1}: {res['cb_session'][:30]}...")
             else:
                 print(f"  [❌] Session {i+1}: Failed to harvest")
             if i < count - 1:
@@ -230,7 +234,9 @@ class SessionPool:
             print(f"[-] Harvester failed for {user_id}: {e}")
             
         new_state = {
-            "cb_session": session if session else "",
+            "cb_session": session.get("cb_session") if session else "",
+            "user_agent": session.get("user_agent") if session else "",
+            "ip": session.get("ip") if session else "",
             "question_id": "1435202",
             "sequence": "20",
             "last_bot_text": "",

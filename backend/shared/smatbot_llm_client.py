@@ -34,19 +34,12 @@ def _send_packet(text: str, state: dict) -> tuple[bool, int]:
         "language_code": "default"
     }
 
-    import random
-    user_agents = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:124.0) Gecko/20100101 Firefox/124.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0"
-    ]
-    random_ip = f"{random.randint(11,250)}.{random.randint(0,255)}.{random.randint(0,255)}.{random.randint(0,255)}"
+    user_agent = state.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+    ip = state.get("ip", "127.0.0.1")
 
     custom_headers = {
-        "User-Agent": random.choice(user_agents),
-        "X-Forwarded-For": random_ip,
+        "User-Agent": user_agent,
+        "X-Forwarded-For": ip,
         "Origin": "https://www.smatbot.com",
         "Referer": "https://www.smatbot.com/"
     }
@@ -114,12 +107,14 @@ def _sync_smatbot_call(prompt: str, system_prompt: str) -> str:
     4. Returns the raw response text
     """
     harvester = SessionHarvester()
-    cb_session = harvester.harvest_one(timeout_ms=15000, max_retries=3)
-    if not cb_session:
+    res = harvester.harvest_one(timeout_ms=15000, max_retries=3)
+    if not res or not res.get("cb_session"):
         raise RuntimeError("Failed to harvest SmatBot session")
 
     state = {
-        "cb_session": cb_session,
+        "cb_session": res["cb_session"],
+        "user_agent": res.get("user_agent", ""),
+        "ip": res.get("ip", ""),
         "question_id": "1435202",
         "sequence": "20",
         "last_bot_text": "",
