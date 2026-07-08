@@ -2,6 +2,7 @@
 
 TogetherScout is an AI-powered startup scouting tool for VCs.
 
+Demo gif is loading!!!
 ![TogetherScout Demo](togetherscout.gif)
 
 ## Setup Instructions
