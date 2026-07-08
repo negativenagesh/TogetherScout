@@ -137,11 +137,9 @@ async def scrape_topstartups(filters: Dict[str, Any], page: int = 1) -> Dict[str
             continue
             
     has_more = False
-    pagination = soup.find("ul", class_="pagination")
-    if pagination:
-        next_btn = pagination.find("a", string=lambda s: s and "Next" in s)
-        if next_btn:
-            has_more = True
+    next_link = soup.find('a', class_='infinite-more-link')
+    if next_link:
+        has_more = True
             
     return {
         "companies": companies,
