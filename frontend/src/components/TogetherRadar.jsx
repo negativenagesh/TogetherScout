@@ -212,12 +212,16 @@ export default function TogetherRadar() {
 
                     {/* Summary */}
                     {msg.summary && (
-                      <div className="mt-4 prose prose-invert prose-sm max-w-none text-gray-300">
-                         {/* We are doing a simple render of summary here, for full markdown a library like react-markdown is better, but doing basic split for now */}
-                         {msg.summary.split('\n').map((line, i) => (
-                            <p key={i} className="mb-2">{line.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>')}</p>
-                         ))}
-                      </div>
+                      <div className="mt-4 prose prose-invert prose-sm max-w-none text-gray-300"
+                           dangerouslySetInnerHTML={{ 
+                             __html: msg.summary
+                               .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                               .replace(/### (.*?)(?:\n|$)/g, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
+                               .replace(/## (.*?)(?:\n|$)/g, '<h2 class="text-xl font-bold mt-4 mb-2">$1</h2>')
+                               .replace(/# (.*?)(?:\n|$)/g, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>')
+                               .replace(/\n/g, '<br/>') 
+                           }} 
+                      />
                     )}
                     
                     {/* Error */}

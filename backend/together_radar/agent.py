@@ -372,13 +372,14 @@ async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidat
     )
     
     async for chunk in response_stream:
-        content = chunk.choices[0].delta.content
-        if content:
-            if log_callback:
-                await log_callback({
-                    "type": "stream_chunk",
-                    "data": content
-                })
+        if chunk.choices and len(chunk.choices) > 0:
+            content = chunk.choices[0].delta.content
+            if content:
+                if log_callback:
+                    await log_callback({
+                        "type": "stream_chunk",
+                        "data": content
+                    })
 
 async def process_orchestrator_stream(query: str, log_callback: Optional[LogCallback] = None):
     """Agent 0: Orchestrator. The main entry point."""
