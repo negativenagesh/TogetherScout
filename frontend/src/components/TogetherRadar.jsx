@@ -175,7 +175,15 @@ export default function TogetherRadar() {
                         {msg.logs.map((log, lidx) => (
                           <div key={lidx} className="text-xs text-gray-400">
                             <span className="font-bold text-magenta-400">[{log.agent_name}]</span> called <span className="font-bold text-green-400">{log.tool_name}</span>
-                            <div className="truncate opacity-50 mt-1">↳ {log.result}</div>
+                            <details className="mt-1 opacity-70 group">
+                              <summary className="cursor-pointer hover:text-white transition-colors list-none flex items-center gap-1">
+                                <svg className="w-3 h-3 group-open:rotate-90 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                <span className="truncate flex-1">↳ {log.result}</span>
+                              </summary>
+                              <div className="mt-2 p-2 bg-black/40 rounded border border-white/5 whitespace-pre-wrap font-mono text-[10px] text-gray-300 max-h-40 overflow-y-auto custom-scrollbar">
+                                {log.result}
+                              </div>
+                            </details>
                           </div>
                         ))}
                       </div>

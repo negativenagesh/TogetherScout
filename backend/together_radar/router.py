@@ -38,4 +38,10 @@ async def radar_chat(request: Request, body: QueryRequest):
             if event.get("type") in ["done", "error"]:
                 break
                 
-    return EventSourceResponse(event_generator())
+    return EventSourceResponse(
+        event_generator(),
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "X-Accel-Buffering": "no"
+        }
+    )
