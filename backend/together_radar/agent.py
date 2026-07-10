@@ -227,22 +227,23 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], log_callback: Opt
                 if fn_name in ALL_TOOLS:
                     async def run_tool(call_id, name, args):
                         res = await ALL_TOOLS[name](**args)
+                        
+                        truncated_result = str(res)[:500] + "..." if len(str(res)) > 500 else str(res)
+                        log_entry = ToolLog(agent_name="DiscoveryAgent", tool_name=name, arguments=args, result=truncated_result)
+                        logs.append(log_entry)
+                        
+                        if log_callback:
+                            await log_callback({
+                                "type": "log",
+                                "data": log_entry.model_dump()
+                            })
+                            
                         return call_id, name, args, res
                     tasks.append(run_tool(tool_call.id, fn_name, fn_args))
             
             results = await asyncio.gather(*tasks)
             
             for call_id, fn_name, fn_args, result in results:
-                truncated_result = str(result)[:500] + "..." if len(str(result)) > 500 else str(result)
-                log_entry = ToolLog(agent_name="DiscoveryAgent", tool_name=fn_name, arguments=fn_args, result=truncated_result)
-                logs.append(log_entry)
-                
-                if log_callback:
-                    await log_callback({
-                        "type": "log",
-                        "data": log_entry.model_dump()
-                    })
-
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call_id,
@@ -303,21 +304,22 @@ async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], log_callba
                 if fn_name in ALL_TOOLS:
                     async def run_deep_tool(call_id, name, args):
                         res = await ALL_TOOLS[name](**args)
+                        
+                        truncated_result = str(res)[:500] + "..." if len(str(res)) > 500 else str(res)
+                        log_entry = ToolLog(agent_name="DeepDiveAgent", tool_name=name, arguments=args, result=truncated_result)
+                        logs.append(log_entry)
+                        
+                        if log_callback:
+                            await log_callback({
+                                "type": "log",
+                                "data": log_entry.model_dump()
+                            })
+                            
                         return call_id, name, args, res
                     tasks.append(run_deep_tool(tool_call.id, fn_name, fn_args))
             
             results = await asyncio.gather(*tasks)
             for call_id, fn_name, fn_args, result in results:
-                truncated_result = str(result)[:500] + "..." if len(str(result)) > 500 else str(result)
-                log_entry = ToolLog(agent_name="DeepDiveAgent", tool_name=fn_name, arguments=fn_args, result=truncated_result)
-                logs.append(log_entry)
-                
-                if log_callback:
-                    await log_callback({
-                        "type": "log",
-                        "data": log_entry.model_dump()
-                    })
-
                 messages.append({
                     "role": "tool",
                     "tool_call_id": call_id,
