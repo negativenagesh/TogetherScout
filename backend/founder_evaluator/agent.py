@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from .tools import fetch_github_stats
 from ..shared.models import Founder, Evaluation
 from ..shared.data import save_evaluation
-from ..shared.nvidia_llm_client import nvidia_llm_call
+from ..shared.dynamic_llm_client import dynamic_llm_call
 import uuid
 import datetime
 
@@ -21,7 +21,12 @@ def get_rubric(role: str) -> str:
     else:
         return "Evaluate overall potential and domain expertise."
 
-async def run_evaluation_stream(founder: Founder):
+async def run_evaluation_stream(
+    founder: Founder,
+    gemini_api_key: str = None,
+    deepseek_api_key: str = None,
+    active_model: str = None
+):
     yield "data: " + json.dumps({"type": "step", "content": f"Starting evaluation for {founder.name} ({founder.role} role)..."}) + "\n\n"
     await asyncio.sleep(0.5)
     
@@ -57,7 +62,13 @@ Output your evaluation strictly in JSON format with the following keys:
     
     try:
         system_prompt = "You are an elite Silicon Valley Venture Capitalist evaluating a startup founder. Output ONLY a valid JSON object matching the requested schema."
-        content = await nvidia_llm_call(prompt, system_prompt)
+        content = await dynamic_llm_call(
+            prompt, 
+            system_prompt,
+            gemini_api_key=gemini_api_key,
+            deepseek_api_key=deepseek_api_key,
+            active_model=active_model
+        )
         yield "data: " + json.dumps({"type": "step", "content": "Received reasoning from AI Engine."}) + "\n\n"
         
         # Try to extract JSON from the response

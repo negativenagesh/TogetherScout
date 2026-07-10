@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Header
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional
@@ -10,12 +10,14 @@ router = APIRouter()
 
 class QueryRequest(BaseModel):
     query: str
-    gemini_api_key: Optional[str] = None
-    deepseek_api_key: Optional[str] = None
-    active_model: Optional[str] = None
 
 @router.post("/chat")
-async def radar_chat(request: Request, body: QueryRequest):
+async def radar_chat(
+    body: QueryRequest,
+    x_gemini_api_key: Optional[str] = Header(None),
+    x_deepseek_api_key: Optional[str] = Header(None),
+    x_active_model: Optional[str] = Header(None)
+):
     async def event_generator():
         queue = asyncio.Queue()
         
@@ -27,9 +29,9 @@ async def radar_chat(request: Request, body: QueryRequest):
                 await process_orchestrator_stream(
                     query=body.query,
                     log_callback=log_callback,
-                    gemini_api_key=body.gemini_api_key,
-                    deepseek_api_key=body.deepseek_api_key,
-                    active_model=body.active_model
+                    gemini_api_key=x_gemini_api_key,
+                    deepseek_api_key=x_deepseek_api_key,
+                    active_model=x_active_model
                 )
                 await queue.put({"type": "done"})
             except Exception as e:

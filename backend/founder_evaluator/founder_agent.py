@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from firecrawl import AsyncFirecrawlApp
 from ..shared.models import Founder, FounderEvaluation, MetricBreakdown
-from ..shared.nvidia_llm_client import nvidia_llm_call
+from ..shared.dynamic_llm_client import dynamic_llm_call
 
 load_dotenv()
 
@@ -53,7 +53,12 @@ async def fetch_yc_context(founder: Founder):
         
     return context_data
 
-async def evaluate_founder_agent(founder: Founder) -> FounderEvaluation:
+async def evaluate_founder_agent(
+    founder: Founder,
+    gemini_api_key: str = None,
+    deepseek_api_key: str = None,
+    active_model: str = None
+) -> FounderEvaluation:
     # 1. Fetch deep context from YC
     yc_context = await fetch_yc_context(founder)
     if yc_context["linkedin_url"]:
@@ -143,7 +148,13 @@ Output your response strictly as JSON that matches this schema:
     system_prompt = "You are an elite Silicon Valley Venture Capitalist evaluating a startup founder. Output ONLY a valid JSON object matching the requested schema."
 
     try:
-        content = await nvidia_llm_call(prompt, system_prompt)
+        content = await dynamic_llm_call(
+            prompt, 
+            system_prompt,
+            gemini_api_key=gemini_api_key,
+            deepseek_api_key=deepseek_api_key,
+            active_model=active_model
+        )
         # Try to extract JSON from the response (it may have extra text around it)
         json_match = content
         if '{' in content:

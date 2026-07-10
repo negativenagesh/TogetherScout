@@ -199,7 +199,7 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpen
                 "1. Fan out! Call MULTIPLE tools simultaneously (e.g., Exa, Tavily, and HN) with 5-8 different broad phrasing angles to maximize context.\n"
                 "2. If tools return '[]' or 'Error', DO NOT GIVE UP. Immediately retry by calling different tools or massively changing your query keywords (e.g., from 'ex-OpenAI stealth' to 'recently founded by OpenAI alumni').\n"
                 "3. Once you have a list of candidate company names, output them as a raw JSON list of strings (e.g., ['Company A', 'Company B']). "
-                "Do NOT include markdown block formatting, just the raw JSON list."
+                "Do NOT include markdown block formatting, just the raw JSON list. If you do not output a strictly valid JSON array of strings, the pipeline will fail."
             )
         },
         {"role": "user", "content": f"VC Query: {query}"}
@@ -274,7 +274,7 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpen
                 if isinstance(candidates, list):
                     return candidates
             except:
-                return ["Acme AI"]
+                return [content]
     return []
 
 async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None) -> StealthCompanyRecord:

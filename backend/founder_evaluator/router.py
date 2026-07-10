@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from typing import Optional
 from sse_starlette.sse import EventSourceResponse
 from typing import List
 from ..shared.models import Founder, Evaluation
@@ -26,9 +27,19 @@ async def get_founder_evaluation(founder_id: str):
     return e
 
 @router.get("/{founder_id}/evaluate_stream")
-async def evaluate_founder_stream(founder_id: str):
+async def evaluate_founder_stream(
+    founder_id: str,
+    gemini_api_key: Optional[str] = Query(None),
+    deepseek_api_key: Optional[str] = Query(None),
+    active_model: Optional[str] = Query(None)
+):
     f = get_founder(founder_id)
     if not f:
         raise HTTPException(status_code=404, detail="Founder not found")
     
-    return EventSourceResponse(run_evaluation_stream(f))
+    return EventSourceResponse(run_evaluation_stream(
+        f,
+        gemini_api_key=gemini_api_key,
+        deepseek_api_key=deepseek_api_key,
+        active_model=active_model
+    ))

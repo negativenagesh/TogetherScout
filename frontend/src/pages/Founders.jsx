@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { API_BASE_URL } from '../config';
+import { apiFetch } from '../utils/api';
 
 const BATCHES = ["W27", "F26", "S26", "P26", "W26", "F25", "S25", "P25", "W25", "F24", "S24", "W24", "S23", "W23", "S22", "W22", "S21", "W21", "S20", "W20", "S19", "W19", "S18", "W18", "S17", "W17", "S16", "W16", "S15", "W15", "S14", "W14", "S13", "W13", "S12", "W12", "S11", "W11", "S10", "W10", "S09", "W09", "S08", "W08", "S07", "W07", "S06", "W06", "S05"];
 const INDUSTRIES = ["B2B", "Consumer", "Healthcare", "Fintech", "Industrials", "Real Estate and Construction", "Education", "Government"];
@@ -31,7 +32,7 @@ export default function Founders() {
         if (prev[founder.id] !== undefined) return prev;
         
         if (founder.company_slug) {
-          fetch(`${API_BASE_URL}/api/companies/founders/bio`, {
+          apiFetch(`/api/companies/founders/bio`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -91,7 +92,7 @@ export default function Founders() {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/companies/founders_yc_search`, {
+      const response = await apiFetch(`/api/companies/founders_yc_search`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -141,7 +142,7 @@ export default function Founders() {
     };
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/companies/founders/${founder.id}/evaluate`, {
+      const res = await apiFetch(`/api/companies/founders/${founder.id}/evaluate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(founderModel)

@@ -3,7 +3,7 @@ import json
 import httpx
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-from ..shared.nvidia_llm_client import nvidia_llm_call
+from ..shared.dynamic_llm_client import dynamic_llm_call
 
 load_dotenv()
 
@@ -80,7 +80,16 @@ Company Website Scrape:
 {{website_text}}
 """
 
-async def classify_company(name: str, one_liner: str, description: str, slug: str = "", website: str = "") -> dict:
+async def classify_company(
+    name: str, 
+    one_liner: str, 
+    description: str, 
+    slug: str = "", 
+    website: str = "",
+    gemini_api_key: str = None,
+    deepseek_api_key: str = None,
+    active_model: str = None
+) -> dict:
     yc_text = await scrape_yc_profile(slug) if slug else ""
     website_text = await scrape_website(website) if website else ""
 
@@ -94,7 +103,13 @@ async def classify_company(name: str, one_liner: str, description: str, slug: st
     
     try:
         system_prompt = "You are an elite VC classification assistant. Output ONLY a valid JSON object matching the requested schema."
-        content = await nvidia_llm_call(prompt, system_prompt)
+        content = await dynamic_llm_call(
+            prompt, 
+            system_prompt,
+            gemini_api_key=gemini_api_key,
+            deepseek_api_key=deepseek_api_key,
+            active_model=active_model
+        )
         # Try to extract JSON from the response
         json_match = content
         if '{' in content:

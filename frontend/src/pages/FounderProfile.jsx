@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { apiFetch } from '../utils/api';
 
 export default function FounderProfile() {
   const { id } = useParams();
@@ -11,7 +12,7 @@ export default function FounderProfile() {
   const traceEndRef = useRef(null);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/api/founders/${id}`)
+    apiFetch(`/api/founders/${id}`)
       .then(r => r.json())
       .then(data => {
         setFounder(data);
@@ -19,7 +20,7 @@ export default function FounderProfile() {
       });
       
     // Fetch existing eval if any
-    fetch(`http://localhost:8000/api/founders/${id}/evaluation`)
+    apiFetch(`/api/founders/${id}/evaluation`)
       .then(r => {
         if (r.ok) return r.json();
         return null;
@@ -40,7 +41,16 @@ export default function FounderProfile() {
     setTrace([]);
     setEvaluation(null);
 
-    const source = new EventSource(`http://localhost:8000/api/founders/${id}/evaluate_stream`);
+    const geminiKey = localStorage.getItem('gemini_api_key') || '';
+    const deepseekKey = localStorage.getItem('deepseek_api_key') || '';
+    const activeModel = localStorage.getItem('active_model') || 'gemini';
+    
+    const queryParams = new URLSearchParams();
+    if (geminiKey) queryParams.append('gemini_api_key', geminiKey);
+    if (deepseekKey) queryParams.append('deepseek_api_key', deepseekKey);
+    if (activeModel) queryParams.append('active_model', activeModel);
+
+    const source = new EventSource(`http://localhost:8000/api/founders/${id}/evaluate_stream?${queryParams.toString()}`);
 
     source.onmessage = (event) => {
       if (event.data === '[DONE]') {

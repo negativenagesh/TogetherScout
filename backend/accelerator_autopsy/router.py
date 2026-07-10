@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Header
 from typing import List
 from ..shared.models import Company
 from ..shared.data import get_all_companies, get_company, save_company
@@ -55,7 +55,12 @@ async def topstartups_search(request: Request):
     return result
 
 @router.post("/{company_id}/classify")
-async def trigger_classification(company_id: str):
+async def trigger_classification(
+    company_id: str,
+    x_gemini_api_key: Optional[str] = Header(None),
+    x_deepseek_api_key: Optional[str] = Header(None),
+    x_active_model: Optional[str] = Header(None)
+):
     company = get_company(company_id)
     if not company:
         raise HTTPException(status_code=404, detail="Company not found")
@@ -63,7 +68,10 @@ async def trigger_classification(company_id: str):
     result = await classify_company(
         company.name, 
         company.one_liner, 
-        company.description or company.one_liner
+        company.description or company.one_liner,
+        x_gemini_api_key,
+        x_deepseek_api_key,
+        x_active_model
     )
     
     company.thesis_category = result.get("thesis_category", [])
@@ -86,13 +94,21 @@ class ExternalCompanyInput(BaseModel):
     website: Optional[str] = ""
 
 @router.post("/evaluate_external")
-async def evaluate_external_company(company: ExternalCompanyInput):
+async def evaluate_external_company(
+    company: ExternalCompanyInput,
+    x_gemini_api_key: Optional[str] = Header(None),
+    x_deepseek_api_key: Optional[str] = Header(None),
+    x_active_model: Optional[str] = Header(None)
+):
     result = await classify_company(
         company.name,
         company.one_liner,
         company.description,
         company.slug,
-        company.website
+        company.website,
+        x_gemini_api_key,
+        x_deepseek_api_key,
+        x_active_model
     )
     return result
 
@@ -102,11 +118,21 @@ from ..founder_evaluator.founder_agent import evaluate_founder_agent
 import datetime
 
 @router.post("/founders/{founder_id}/evaluate")
-async def evaluate_founder_endpoint(founder: Founder):
+async def evaluate_founder_endpoint(
+    founder: Founder,
+    x_gemini_api_key: Optional[str] = Header(None),
+    x_deepseek_api_key: Optional[str] = Header(None),
+    x_active_model: Optional[str] = Header(None)
+):
     # This endpoint receives the founder object directly from the frontend
     # Since we don't sync all Algolia founders to DB initially, we just accept the body.
     
-    result = await evaluate_founder_agent(founder)
+    result = await evaluate_founder_agent(
+        founder,
+        x_gemini_api_key,
+        x_deepseek_api_key,
+        x_active_model
+    )
     
     founder.evaluation = result
     save_founder(founder)
