@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request
-from sse_starlette.sse import EventSourceResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import json
 import asyncio
@@ -32,19 +32,20 @@ async def radar_chat(request: Request, body: QueryRequest):
         task = asyncio.create_task(run_orchestrator())
         
         # Yield a 2KB padding chunk to bust any initial Nginx/Proxy buffering
-        yield {"event": "padding", "data": " " * 2048}
+        yield f"event: padding\ndata: {' ' * 2048}\n\n"
         
         while True:
             # Yield events from the queue to the SSE stream
             event = await queue.get()
-            yield {"data": json.dumps(event)}
+            data_str = json.dumps(event)
+            yield f"data: {data_str}\n\n"
             
             if event.get("type") in ["done", "error"]:
                 break
                 
-    return EventSourceResponse(
+    return StreamingResponse(
         event_generator(),
-        ping=15,
+        media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache, no-transform",
             "X-Accel-Buffering": "no",
