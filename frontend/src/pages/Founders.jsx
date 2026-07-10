@@ -175,8 +175,12 @@ export default function Founders() {
         document.getElementById('header-banner-portal')
       )}
 
+      {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Founders Directory</h1>
+        <div>
+          <h1 className="text-5xl font-italiana tracking-tight text-white/95 drop-shadow-md">Founders Directory</h1>
+          <p className="text-magenta-400 font-script text-2xl mt-1 opacity-80 pl-1">find the visionaries</p>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
