@@ -187,7 +187,7 @@ all_tool_schemas = [
     }
 ]
 
-async def run_discovery_agent(query: str, logs: List[ToolLog], log_callback: Optional[LogCallback] = None) -> List[str]:
+async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None) -> List[str]:
     """Agent 1: Discovery. Finds candidate company names based on VC query."""
     messages = [
         {
@@ -207,10 +207,11 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], log_callback: Opt
 
     for attempt in range(5):
         response = await client.chat.completions.create(
-            model=MODEL_NAME,
+            model=model_name,
             messages=messages,
             tools=all_tool_schemas,
-            temperature=0.2
+            temperature=0.2,
+            max_tokens=10000
         )
         
         message = response.choices[0].message
@@ -276,7 +277,7 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], log_callback: Opt
                 return ["Acme AI"]
     return []
 
-async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], log_callback: Optional[LogCallback] = None) -> StealthCompanyRecord:
+async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None) -> StealthCompanyRecord:
     """Agent 2: Deep Dive. Evaluates a single candidate."""
     messages = [
         {
@@ -296,10 +297,11 @@ async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], log_callba
 
     for _ in range(4):
         response = await client.chat.completions.create(
-            model=MODEL_NAME,
+            model=model_name,
             messages=messages,
             tools=all_tool_schemas,
-            temperature=0.2
+            temperature=0.2,
+            max_tokens=10000
         )
         
         message = response.choices[0].message
@@ -368,7 +370,7 @@ async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], log_callba
     
     return StealthCompanyRecord(name=company_name, trademark_status=False, form_d_filed=False, job_signal=False, confidence_score=0, evidence=["Max turns reached"])
 
-async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidates: List[StealthCompanyRecord], log_callback: Optional[LogCallback] = None):
+async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidates: List[StealthCompanyRecord], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None):
     """Agent 3: Synthesizer (Streaming). Summarizes the findings and answers the user."""
     log_text = "\n".join([f"- {l.tool_name} returned: {l.result}" for l in logs])
     messages = [
@@ -397,7 +399,7 @@ async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidat
         })
 
     response_stream = await client.chat.completions.create(
-        model=MODEL_NAME,
+        model=model_name,
         messages=messages,
         max_tokens=10000,
         stream=True
@@ -413,15 +415,39 @@ async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidat
                         "data": content
                     })
 
-async def process_orchestrator_stream(query: str, log_callback: Optional[LogCallback] = None):
+async def process_orchestrator_stream(
+    query: str, 
+    log_callback: Optional[LogCallback] = None,
+    gemini_api_key: Optional[str] = None,
+    deepseek_api_key: Optional[str] = None,
+    active_model: Optional[str] = None
+):
     """Agent 0: Orchestrator. The main entry point."""
     logs: List[ToolLog] = []
     
+    # Default to NVIDIA NIM client
+    active_client = client
+    active_model_name = MODEL_NAME
+
+    if gemini_api_key and deepseek_api_key:
+        if active_model == 'deepseek':
+            active_client = AsyncOpenAI(api_key=deepseek_api_key, base_url="https://api.deepseek.com")
+            active_model_name = "deepseek-v4-flash"
+        else:
+            active_client = AsyncOpenAI(api_key=gemini_api_key, base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
+            active_model_name = "gemini-2.5-flash"
+    elif gemini_api_key:
+        active_client = AsyncOpenAI(api_key=gemini_api_key, base_url="https://generativelanguage.googleapis.com/v1beta/openai/")
+        active_model_name = "gemini-2.5-flash"
+    elif deepseek_api_key:
+        active_client = AsyncOpenAI(api_key=deepseek_api_key, base_url="https://api.deepseek.com")
+        active_model_name = "deepseek-v4-flash"
+    
     if log_callback:
-        await log_callback({"type": "status", "data": "Starting Discovery Phase..."})
+        await log_callback({"type": "status", "data": f"Starting Discovery Phase using {active_model_name}..."})
 
     # Discovery Phase
-    candidates = await run_discovery_agent(query, logs, log_callback)
+    candidates = await run_discovery_agent(query, logs, active_client, active_model_name, log_callback)
     
     if log_callback:
         await log_callback({"type": "status", "data": f"Discovery Phase complete. Found {len(candidates)} candidates. Starting Deep Dive Phase..."})
@@ -431,7 +457,7 @@ async def process_orchestrator_stream(query: str, log_callback: Optional[LogCall
     for candidate in candidates[:3]:
         if log_callback:
             await log_callback({"type": "status", "data": f"Deep diving into candidate: {candidate}"})
-        record = await run_deep_dive_agent(candidate, logs, log_callback)
+        record = await run_deep_dive_agent(candidate, logs, active_client, active_model_name, log_callback)
         final_records.append(record)
         
     # Send candidates back so frontend can render them before streaming starts
@@ -442,7 +468,7 @@ async def process_orchestrator_stream(query: str, log_callback: Optional[LogCall
         })
         
     # Synthesize Final Answer
-    await run_synthesizer_agent_stream(query, logs, final_records, log_callback)
+    await run_synthesizer_agent_stream(query, logs, final_records, active_client, active_model_name, log_callback)
     
     if log_callback:
         await log_callback({"type": "done"})

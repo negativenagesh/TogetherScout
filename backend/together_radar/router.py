@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from typing import Optional
 import json
 import asyncio
 from .agent import process_orchestrator_stream
@@ -9,6 +10,9 @@ router = APIRouter()
 
 class QueryRequest(BaseModel):
     query: str
+    gemini_api_key: Optional[str] = None
+    deepseek_api_key: Optional[str] = None
+    active_model: Optional[str] = None
 
 @router.post("/chat")
 async def radar_chat(request: Request, body: QueryRequest):
@@ -20,7 +24,13 @@ async def radar_chat(request: Request, body: QueryRequest):
             
         async def run_orchestrator():
             try:
-                await process_orchestrator_stream(body.query, log_callback)
+                await process_orchestrator_stream(
+                    query=body.query,
+                    log_callback=log_callback,
+                    gemini_api_key=body.gemini_api_key,
+                    deepseek_api_key=body.deepseek_api_key,
+                    active_model=body.active_model
+                )
                 await queue.put({"type": "done"})
             except Exception as e:
                 import traceback
