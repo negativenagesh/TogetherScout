@@ -122,23 +122,23 @@ export default function TogetherRadar() {
 
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-6">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-4">
-            <div className="w-16 h-16 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
-              <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="h-full flex flex-col items-center justify-start text-center p-4 pt-6">
+            <div className="w-10 h-10 bg-gradient-to-tr from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
               </svg>
             </div>
-            <h3 className="text-2xl font-bold mb-2">Uncover Hidden Gems</h3>
-            <p className="text-muted-foreground text-sm mb-8 max-w-sm">Ask me to find stealth startups, specific founders, or signals across the web using our multi-agent discovery engine.</p>
+            <h3 className="text-lg font-bold mb-1 font-italiana tracking-wide">Uncover Hidden Gems</h3>
+            <p className="text-muted-foreground text-[10px] mb-4 max-w-xs leading-relaxed">Ask me to find stealth startups, specific founders, or signals across the web using our multi-agent discovery engine.</p>
             
-            <div className="flex flex-col gap-1.5 w-full max-w-sm mt-2 opacity-80 hover:opacity-100 transition-opacity">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 text-center font-italiana">Example Queries</p>
-              <div className="grid grid-cols-1 gap-1.5 h-[30vh] overflow-y-auto custom-scrollbar pr-2">
+            <div className="flex flex-col gap-1 w-full max-w-sm opacity-80 hover:opacity-100 transition-opacity">
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-1.5 text-center font-italiana">Example Queries</p>
+              <div className="grid grid-cols-1 gap-1 max-h-[35vh] overflow-y-auto custom-scrollbar pr-1">
                 {EXAMPLE_QUERIES.map((eq, i) => (
                   <button 
                     key={i}
                     onClick={() => handleSend(eq)}
-                    className="w-full text-left bg-gradient-to-r from-white/5 to-transparent hover:from-white/10 hover:to-white/5 border border-white/5 rounded p-2 text-[11px] text-gray-300 font-italiana transition-all duration-300 hover:border-white/20 hover:text-white"
+                    className="w-full text-left bg-gradient-to-r from-white/5 to-transparent hover:from-white/10 hover:to-white/5 border border-white/5 rounded p-1.5 text-[9px] leading-tight text-gray-400 font-mono tracking-wide transition-all duration-300 hover:border-white/20 hover:text-white hover:shadow-[0_0_10px_rgba(255,255,255,0.05)]"
                   >
                     {eq}
                   </button>
