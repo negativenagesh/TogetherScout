@@ -23,6 +23,7 @@ client = AsyncOpenAI(
 MODEL_NAME = "stepfun-ai/step-3.7-flash"
 
 class ToolLog(BaseModel):
+    id: Optional[str] = None
     agent_name: str
     tool_name: str
     arguments: Dict[str, Any]
@@ -226,10 +227,22 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], log_callback: Opt
                 
                 if fn_name in ALL_TOOLS:
                     async def run_tool(call_id, name, args):
+                        if log_callback:
+                            await log_callback({
+                                "type": "log",
+                                "data": {
+                                    "id": call_id,
+                                    "agent_name": "DiscoveryAgent",
+                                    "tool_name": name,
+                                    "arguments": args,
+                                    "result": "Running..."
+                                }
+                            })
+                            
                         res = await ALL_TOOLS[name](**args)
                         
                         truncated_result = str(res)[:500] + "..." if len(str(res)) > 500 else str(res)
-                        log_entry = ToolLog(agent_name="DiscoveryAgent", tool_name=name, arguments=args, result=truncated_result)
+                        log_entry = ToolLog(id=call_id, agent_name="DiscoveryAgent", tool_name=name, arguments=args, result=truncated_result)
                         logs.append(log_entry)
                         
                         if log_callback:
@@ -303,10 +316,22 @@ async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], log_callba
                 
                 if fn_name in ALL_TOOLS:
                     async def run_deep_tool(call_id, name, args):
+                        if log_callback:
+                            await log_callback({
+                                "type": "log",
+                                "data": {
+                                    "id": call_id,
+                                    "agent_name": "DeepDiveAgent",
+                                    "tool_name": name,
+                                    "arguments": args,
+                                    "result": "Running..."
+                                }
+                            })
+                            
                         res = await ALL_TOOLS[name](**args)
                         
                         truncated_result = str(res)[:500] + "..." if len(str(res)) > 500 else str(res)
-                        log_entry = ToolLog(agent_name="DeepDiveAgent", tool_name=name, arguments=args, result=truncated_result)
+                        log_entry = ToolLog(id=call_id, agent_name="DeepDiveAgent", tool_name=name, arguments=args, result=truncated_result)
                         logs.append(log_entry)
                         
                         if log_callback:
