@@ -71,7 +71,8 @@ export default function TogetherRadar() {
               
               setMessages(prev => {
                 const newMessages = [...prev];
-                const lastMsg = newMessages[newMessages.length - 1];
+                // Deep clone the last message so React detects the state mutation
+                const lastMsg = { ...newMessages[newMessages.length - 1] };
                 
                 if (event.type === 'status') {
                   lastMsg.status = event.data;
@@ -92,6 +93,7 @@ export default function TogetherRadar() {
                   lastMsg.error = event.data;
                 }
                 
+                newMessages[newMessages.length - 1] = lastMsg;
                 return newMessages;
               });
               

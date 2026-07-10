@@ -21,6 +21,7 @@ async def radar_chat(request: Request, body: QueryRequest):
         async def run_orchestrator():
             try:
                 await process_orchestrator_stream(body.query, log_callback)
+                await queue.put({"type": "done"})
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -29,6 +30,9 @@ async def radar_chat(request: Request, body: QueryRequest):
                 
         # Start orchestrator in background task
         task = asyncio.create_task(run_orchestrator())
+        
+        # Yield a 2KB padding chunk to bust any initial Nginx/Proxy buffering
+        yield {"event": "padding", "data": " " * 2048}
         
         while True:
             # Yield events from the queue to the SSE stream
@@ -40,8 +44,10 @@ async def radar_chat(request: Request, body: QueryRequest):
                 
     return EventSourceResponse(
         event_generator(),
+        ping=15,
         headers={
             "Cache-Control": "no-cache, no-transform",
-            "X-Accel-Buffering": "no"
+            "X-Accel-Buffering": "no",
+            "Connection": "keep-alive"
         }
     )
