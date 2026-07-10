@@ -232,12 +232,15 @@ export default function Companies() {
 
       {/* Source Toggle & Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Companies Directory</h1>
+        <div>
+          <h1 className="text-5xl font-italiana tracking-tight text-white/95 drop-shadow-md">Companies Directory</h1>
+          <p className="text-magenta-400 font-script text-2xl mt-1 opacity-80 pl-1">discover the next big thing</p>
+        </div>
         
-        <div className="flex p-1 bg-black/40 border border-border rounded-lg shadow-inner">
+        <div className="flex p-1 bg-black/40 border border-border rounded-lg shadow-inner font-display">
           <button
             onClick={() => setActiveSource("YC")}
-            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 ${
+            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 tracking-wide ${
               activeSource === "YC" 
               ? "bg-foreground text-background shadow-md" 
               : "text-muted-foreground hover:text-foreground"
@@ -247,7 +250,7 @@ export default function Companies() {
           </button>
           <button
             onClick={() => setActiveSource("TopStartups")}
-            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 ${
+            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 tracking-wide ${
               activeSource === "TopStartups" 
               ? "bg-foreground text-background shadow-md" 
               : "text-muted-foreground hover:text-foreground"

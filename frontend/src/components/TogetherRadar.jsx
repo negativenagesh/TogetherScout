@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { API_BASE_URL } from '../config';
+import { marked } from 'marked';
 
 const EXAMPLE_QUERIES = [
   "Find me 3 stealth startups where the founders recently left OpenAI within the last 12 months.",
@@ -212,14 +213,9 @@ export default function TogetherRadar() {
 
                     {/* Summary */}
                     {msg.summary && (
-                      <div className="mt-4 prose prose-invert prose-sm max-w-none text-gray-300"
+                      <div className="mt-4 prose prose-invert max-w-none text-[12px] font-sans text-gray-300 leading-relaxed prose-th:p-1 prose-td:p-1 prose-table:border prose-table:border-white/10 prose-th:bg-white/5 prose-th:text-[11px] prose-td:text-[11px]"
                            dangerouslySetInnerHTML={{ 
-                             __html: msg.summary
-                               .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                               .replace(/### (.*?)(?:\n|$)/g, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>')
-                               .replace(/## (.*?)(?:\n|$)/g, '<h2 class="text-xl font-bold mt-4 mb-2">$1</h2>')
-                               .replace(/# (.*?)(?:\n|$)/g, '<h1 class="text-2xl font-bold mt-4 mb-2">$1</h1>')
-                               .replace(/\n/g, '<br/>') 
+                             __html: marked.parse(msg.summary)
                            }} 
                       />
                     )}

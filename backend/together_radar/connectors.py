@@ -4,13 +4,29 @@ import json
 import asyncio
 import os
 from typing import Dict, Any, List
+from dotenv import load_dotenv
+
+# Force load the .env file from the project root
+env_path = os.path.join(os.path.dirname(__file__), "../../../.env")
+if os.path.exists(env_path):
+    load_dotenv(env_path, override=True)
+else:
+    # Try one level up if run from backend/
+    load_dotenv(os.path.join(os.path.dirname(__file__), "../../.env"), override=True)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TAVILY_KEY = os.getenv("TAVILY_API_KEY")
-EXA_KEY = os.getenv("EXA_API_KEY")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+# Also strip any leftover quotes just in case
+def get_clean_env(key):
+    val = os.getenv(key)
+    if val:
+        return val.strip().strip('"').strip("'")
+    return None
+
+TAVILY_KEY = get_clean_env("TAVILY_API_KEY")
+EXA_KEY = get_clean_env("EXA_API_KEY")
+GITHUB_TOKEN = get_clean_env("GITHUB_TOKEN")
 
 SEC_UA = "TogetherRadar research contact@togetherradar.com"
 
