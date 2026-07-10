@@ -5,13 +5,10 @@ const EXAMPLE_QUERIES = [
   "Find me 3 stealth startups where the founders recently left OpenAI within the last 12 months.",
   "Are there any stealth AI agents startups founded by former Google DeepMind researchers?",
   "Find me stealth biotech startups that recently raised over $2,000,000 according to SEC Form D filings.",
-  "Discover stealth startups hiring for 'Founding ML Engineer' with a focus on robotics.",
   "Are there any stealth companies founded by alumni of Anthropic working on LLM alignment?",
   "Search for Y Combinator alumni who are currently building a stealth startup in the climate tech space.",
   "Find me stealth startups in the cybersecurity sector that filed a trademark recently.",
   "Look for ex-Tesla engineers who have started a stealth autonomous driving company.",
-  "Are there any stealth startups recruiting on Greenhouse or Lever for Rust engineers?",
-  "Find me stealth companies founded in 2024 by former Meta AI employees."
 ];
 
 export default function TogetherRadar() {
@@ -120,7 +117,6 @@ export default function TogetherRadar() {
       <div className="bg-card border-b border-border p-4 flex items-center justify-between">
         <h2 className="text-xl font-bold font-italiana tracking-wide flex items-center gap-2">
           TogetherRadar
-          <span className="bg-amber-500/20 text-amber-500 text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border border-amber-500/30">Beta</span>
         </h2>
       </div>
 
@@ -135,17 +131,19 @@ export default function TogetherRadar() {
             <h3 className="text-2xl font-bold mb-2">Uncover Hidden Gems</h3>
             <p className="text-muted-foreground text-sm mb-8 max-w-sm">Ask me to find stealth startups, specific founders, or signals across the web using our multi-agent discovery engine.</p>
             
-            <div className="space-y-2 w-full max-w-md text-left">
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3 pl-2">Example Queries</p>
-              {EXAMPLE_QUERIES.map((eq, i) => (
-                <button 
-                  key={i}
-                  onClick={() => handleSend(eq)}
-                  className="w-full text-left bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg p-3 text-sm text-gray-300 transition-colors"
-                >
-                  {eq}
-                </button>
-              ))}
+            <div className="flex flex-col gap-1.5 w-full max-w-sm mt-2 opacity-80 hover:opacity-100 transition-opacity">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1 text-center font-italiana">Example Queries</p>
+              <div className="grid grid-cols-1 gap-1.5 h-[30vh] overflow-y-auto custom-scrollbar pr-2">
+                {EXAMPLE_QUERIES.map((eq, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => handleSend(eq)}
+                    className="w-full text-left bg-gradient-to-r from-white/5 to-transparent hover:from-white/10 hover:to-white/5 border border-white/5 rounded p-2 text-[11px] text-gray-300 font-italiana transition-all duration-300 hover:border-white/20 hover:text-white"
+                  >
+                    {eq}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
