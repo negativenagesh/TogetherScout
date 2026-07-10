@@ -13,11 +13,13 @@ class QueryRequest(BaseModel):
 
 @router.post("/chat")
 async def radar_chat(
+
     body: QueryRequest,
-    x_gemini_api_key: Optional[str] = Header(None),
-    x_deepseek_api_key: Optional[str] = Header(None),
-    x_active_model: Optional[str] = Header(None)
+    x_gemini_api_key: Optional[str] = Header(None, alias="x-gemini-api-key"),
+    x_deepseek_api_key: Optional[str] = Header(None, alias="x-deepseek-api-key"),
+    x_active_model: Optional[str] = Header(None, alias="x-active-model")
 ):
+
     async def event_generator():
         queue = asyncio.Queue()
         

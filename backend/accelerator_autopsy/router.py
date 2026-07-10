@@ -57,9 +57,9 @@ async def topstartups_search(request: Request):
 @router.post("/{company_id}/classify")
 async def trigger_classification(
     company_id: str,
-    x_gemini_api_key: Optional[str] = Header(None),
-    x_deepseek_api_key: Optional[str] = Header(None),
-    x_active_model: Optional[str] = Header(None)
+    x_gemini_api_key: Optional[str] = Header(None, alias="x-gemini-api-key"),
+    x_deepseek_api_key: Optional[str] = Header(None, alias="x-deepseek-api-key"),
+    x_active_model: Optional[str] = Header(None, alias="x-active-model")
 ):
     company = get_company(company_id)
     if not company:
@@ -96,9 +96,9 @@ class ExternalCompanyInput(BaseModel):
 @router.post("/evaluate_external")
 async def evaluate_external_company(
     company: ExternalCompanyInput,
-    x_gemini_api_key: Optional[str] = Header(None),
-    x_deepseek_api_key: Optional[str] = Header(None),
-    x_active_model: Optional[str] = Header(None)
+    x_gemini_api_key: Optional[str] = Header(None, alias="x-gemini-api-key"),
+    x_deepseek_api_key: Optional[str] = Header(None, alias="x-deepseek-api-key"),
+    x_active_model: Optional[str] = Header(None, alias="x-active-model")
 ):
     result = await classify_company(
         company.name,
@@ -120,9 +120,9 @@ import datetime
 @router.post("/founders/{founder_id}/evaluate")
 async def evaluate_founder_endpoint(
     founder: Founder,
-    x_gemini_api_key: Optional[str] = Header(None),
-    x_deepseek_api_key: Optional[str] = Header(None),
-    x_active_model: Optional[str] = Header(None)
+    x_gemini_api_key: Optional[str] = Header(None, alias="x-gemini-api-key"),
+    x_deepseek_api_key: Optional[str] = Header(None, alias="x-deepseek-api-key"),
+    x_active_model: Optional[str] = Header(None, alias="x-active-model")
 ):
     # This endpoint receives the founder object directly from the frontend
     # Since we don't sync all Algolia founders to DB initially, we just accept the body.
