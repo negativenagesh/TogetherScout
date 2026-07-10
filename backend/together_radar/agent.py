@@ -17,7 +17,8 @@ if not api_key:
 
 client = AsyncOpenAI(
     api_key=api_key,
-    base_url="https://integrate.api.nvidia.com/v1"
+    base_url="https://integrate.api.nvidia.com/v1",
+    timeout=45.0
 )
 
 MODEL_NAME = "stepfun-ai/step-3.7-flash"

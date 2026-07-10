@@ -265,6 +265,17 @@ export default function TogetherRadar() {
             className="flex-1 bg-black/50 border border-gray-800 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-gray-500 text-white disabled:opacity-50 transition-colors"
           />
           <button
+            type="button"
+            onClick={() => {
+              setMessages([]);
+              setIsRunning(false);
+              setQuery('');
+            }}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold hover:bg-gray-700 transition-colors"
+          >
+            Clear
+          </button>
+          <button
             type="submit"
             disabled={isRunning || !query.trim()}
             className="bg-foreground text-background px-4 py-2 rounded-lg font-bold disabled:opacity-50 transition-opacity hover:opacity-90"
