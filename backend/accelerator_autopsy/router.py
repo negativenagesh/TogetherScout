@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Header
-from typing import List
+from typing import List, Optional
 from ..shared.models import Company
 from ..shared.data import get_all_companies, get_company, save_company
 from .agent import classify_company
