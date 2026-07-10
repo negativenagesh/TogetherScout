@@ -69,19 +69,9 @@ async def recent_form_d_filings(count: int = 20) -> str:
 
 async def sec_full_text_search(entity: str) -> str:
     """Verifies a specific company name in SEC full text."""
-    url = "https://efts.sec.gov/LATEST/search-index"
-    payload = {"keysTyped": entity, "narrow": True}
-    try:
-        async with httpx.AsyncClient(timeout=10.0, headers={"User-Agent": SEC_UA}) as client:
-            r = await client.post(url, json=payload)
-            r.raise_for_status()
-            data = r.json()
-            hits = data.get("hits", {}).get("hits", [])[:20]
-            results = [{"form": h["_source"]["form"], "file_date": h["_source"]["file_date"], "display_names": h["_source"]["display_names"]} for h in hits]
-            return json.dumps(results)
-    except Exception as e:
-        logger.error(f"SEC Full-Text failed: {e}")
-        return "[]"
+    # The direct EFTS API throws a 403 Forbidden on programmatic access.
+    # We use Tavily constrained to SEC Edgar archives.
+    return await tavily_search(f"site:sec.gov/Archives/edgar/data {entity}", max_results=5)
 
 async def hn_search(query: str, hits_per_page: int = 20) -> str:
     """Searches HN for who's hiring, launches, and stealth mentions."""
