@@ -11,6 +11,30 @@ function Layout({ children }) {
   const location = useLocation();
   const isLanding = location.pathname === '/';
   const [serverStatus, setServerStatus] = useState('waking');
+  
+  const [radarWidth, setRadarWidth] = useState(420);
+  const [isDragging, setIsDragging] = useState(false);
+
+  useEffect(() => {
+    if (!isDragging) return;
+    const handleMouseMove = (e) => {
+      const mainEl = document.getElementById('main-container');
+      if (!mainEl) return;
+      const rightEdge = mainEl.getBoundingClientRect().right;
+      let newWidth = rightEdge - e.clientX - 16; // 16px for padding/gap
+      if (newWidth < 300) newWidth = 300;
+      if (newWidth > 800) newWidth = 800;
+      setRadarWidth(newWidth);
+    };
+    const handleMouseUp = () => setIsDragging(false);
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
 
   useEffect(() => {
     let isMounted = true;
@@ -64,13 +88,23 @@ function Layout({ children }) {
           </div>
         </nav>
       </header>
-      <main className="flex-grow flex w-full max-w-[1800px] mx-auto p-4 gap-6 overflow-hidden">
-        <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar pr-2">
+      <main id="main-container" className={`flex-grow flex w-full max-w-[1800px] mx-auto p-4 gap-6 overflow-hidden ${isDragging ? 'select-none pointer-events-none' : ''}`}>
+        <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar pr-2 pointer-events-auto">
           {children}
         </div>
         {!isLanding && (
-          <div className="w-[420px] flex-shrink-0 h-full hidden xl:block pb-4">
-            <TogetherRadar />
+          <div className="hidden xl:flex h-full pb-4 relative pointer-events-auto" style={{ width: radarWidth }}>
+            {/* Drag Handle */}
+            <div 
+              className="absolute -left-5 top-1/2 -translate-y-1/2 w-4 h-16 cursor-ew-resize flex items-center justify-center z-50 group"
+              onMouseDown={(e) => { e.preventDefault(); setIsDragging(true); }}
+            >
+              <div className={`w-1 h-full rounded-full transition-colors ${isDragging ? 'bg-purple-500' : 'bg-white/10 group-hover:bg-white/30'}`} />
+            </div>
+            
+            <div className="w-full h-full">
+              <TogetherRadar />
+            </div>
           </div>
         )}
       </main>

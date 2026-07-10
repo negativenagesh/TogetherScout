@@ -350,7 +350,11 @@ async def run_synthesizer_agent_stream(query: str, logs: List[ToolLog], candidat
                 "You are the Synthesizer Agent. Your job is to provide a final, highly in-depth and comprehensive summary answer to the VC's query "
                 "based strictly on the tool logs and found candidates. You must use a large amount of tokens (write as much detail as possible). "
                 "Include detailed company descriptions, links/URLs found in the web searches, profiles of the founders, funding details, and why "
-                "they fit or do not fit the user's criteria. Structure the report beautifully with markdown headers, bullet points, and tables if useful. "
+                "they fit or do not fit the user's criteria. Structure the report beautifully with markdown headers, bullet points, and tables if useful.\n\n"
+                "CRITICAL FORMATTING INSTRUCTIONS:\n"
+                "- Leave generous blank lines between ALL paragraphs.\n"
+                "- Aggressively use bullet points for lists, leaving a blank line before and after the list.\n"
+                "- The final output should look extremely clean, spacious, and easily scannable.\n"
                 "If no candidates matched perfectly, explain what you DID find in the logs and list the sources/tools you used. "
                 "Output ONLY the markdown summary string."
             )

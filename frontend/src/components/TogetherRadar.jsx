@@ -150,10 +150,10 @@ export default function TogetherRadar() {
         ) : (
           messages.map((msg, idx) => (
             <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              <div className={`max-w-[90%] rounded-2xl px-5 py-3 ${
+              <div className={`${
                 msg.role === 'user' 
-                  ? 'bg-foreground text-background font-medium' 
-                  : 'bg-card border border-border w-full'
+                  ? 'bg-gray-800/80 text-gray-200 p-2.5 rounded-lg text-[12px] leading-relaxed border border-gray-700/50 self-end max-w-[85%] font-sans drop-shadow-sm' 
+                  : 'max-w-[90%] rounded-2xl px-5 py-3 bg-card border border-border w-full'
               }`}>
                 {msg.role === 'user' ? (
                   msg.content
