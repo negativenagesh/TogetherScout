@@ -5,6 +5,7 @@ import Founders from './pages/Founders';
 import Landing from './pages/Landing';
 import { API_BASE_URL } from './config';
 import BuyMeCoffee from './components/BuyMeCoffee';
+import TogetherRadar from './components/TogetherRadar';
 
 function Layout({ children }) {
   const location = useLocation();
@@ -33,9 +34,9 @@ function Layout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {serverStatus === 'waking' && !isLanding && (
-        <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-500 px-4 py-2 text-sm text-center flex items-center justify-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="bg-amber-500/10 border-b border-amber-500/20 text-amber-500 px-4 py-2 text-sm text-center flex items-center justify-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-500 flex-shrink-0">
           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -43,7 +44,7 @@ function Layout({ children }) {
           Using free Render server. Waking up backend from sleep (may take up to 50s)...
         </div>
       )}
-      <header className="border-b border-border bg-background p-4 flex justify-between items-center sticky top-0 z-40">
+      <header className="border-b border-border bg-background p-4 flex justify-between items-center z-40 flex-shrink-0">
         <Link to="/" className="text-3xl font-italiana tracking-tighter text-foreground flex items-center gap-2 hover:opacity-80 transition-opacity">
           TogetherScout
         </Link>
@@ -63,8 +64,15 @@ function Layout({ children }) {
           </div>
         </nav>
       </header>
-      <main className="flex-grow p-6 md:p-8 w-full max-w-7xl mx-auto">
-        {children}
+      <main className="flex-grow flex w-full max-w-[1800px] mx-auto p-4 gap-6 overflow-hidden">
+        <div className="flex-1 overflow-y-auto pb-8 custom-scrollbar pr-2">
+          {children}
+        </div>
+        {!isLanding && (
+          <div className="w-[420px] flex-shrink-0 h-full hidden xl:block pb-4">
+            <TogetherRadar />
+          </div>
+        )}
       </main>
     </div>
   );
