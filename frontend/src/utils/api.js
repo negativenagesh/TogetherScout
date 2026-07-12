@@ -3,6 +3,8 @@ import { API_BASE_URL } from '../config';
 export async function apiFetch(endpoint, options = {}) {
   const geminiKey = localStorage.getItem('gemini_api_key') || '';
   const deepseekKey = localStorage.getItem('deepseek_api_key') || '';
+  const tavilyKey = localStorage.getItem('tavily_api_key') || '';
+  const exaKey = localStorage.getItem('exa_api_key') || '';
   const activeModel = localStorage.getItem('active_model') || 'gemini';
 
   const defaultHeaders = {
@@ -11,6 +13,8 @@ export async function apiFetch(endpoint, options = {}) {
 
   if (geminiKey) defaultHeaders['x-gemini-api-key'] = geminiKey;
   if (deepseekKey) defaultHeaders['x-deepseek-api-key'] = deepseekKey;
+  if (tavilyKey) defaultHeaders['x-tavily-api-key'] = tavilyKey;
+  if (exaKey) defaultHeaders['x-exa-api-key'] = exaKey;
   if (activeModel) defaultHeaders['x-active-model'] = activeModel;
 
   const finalOptions = {

@@ -29,6 +29,31 @@ export default function TogetherRadar() {
 
   const handleSend = async (text) => {
     if (!text.trim()) return;
+
+    // PRE-FLIGHT VALIDATION
+    const hasTavily = !!localStorage.getItem('tavily_api_key');
+    const hasExa = !!localStorage.getItem('exa_api_key');
+    const hasGemini = !!localStorage.getItem('gemini_api_key');
+    const hasDeepseek = !!localStorage.getItem('deepseek_api_key');
+
+    const missingKeys = [];
+    if (!hasTavily) missingKeys.push('[Tavily](https://app.tavily.com/)');
+    if (!hasExa) missingKeys.push('[Exa](https://dashboard.exa.ai/)');
+    if (!hasGemini && !hasDeepseek) missingKeys.push('[DeepSeek](https://platform.deepseek.com/api_keys) or [Gemini](https://aistudio.google.com/app/apikey)');
+
+    if (missingKeys.length > 0) {
+      setMessages(prev => [
+        ...prev,
+        { role: 'user', content: text },
+        { 
+          role: 'assistant', 
+          error: `You are missing required API keys to perform this search. Please add them in the Settings (gear icon top right):\n\n**Missing:** ${missingKeys.join(', ')}` 
+        }
+      ]);
+      setQuery('');
+      return;
+    }
+
     const currentQuery = text;
     setQuery('');
     
@@ -241,9 +266,10 @@ export default function TogetherRadar() {
                     
                     {/* Error */}
                     {msg.error && (
-                      <div className="text-red-400 text-sm p-3 bg-red-900/20 border border-red-900/50 rounded-lg">
-                        {msg.error}
-                      </div>
+                      <div 
+                        className="text-red-400 text-sm p-3 bg-red-900/20 border border-red-900/50 rounded-lg prose prose-invert prose-p:my-0 prose-a:text-red-300 prose-a:underline hover:prose-a:text-red-200"
+                        dangerouslySetInnerHTML={{ __html: marked.parse(msg.error) }}
+                      />
                     )}
                   </div>
                 )}

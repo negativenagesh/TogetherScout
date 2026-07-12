@@ -187,7 +187,7 @@ all_tool_schemas = [
     }
 ]
 
-async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None) -> List[str]:
+async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None, tavily_api_key: Optional[str] = None, exa_api_key: Optional[str] = None) -> List[str]:
     """Agent 1: Discovery. Finds candidate company names based on VC query."""
     messages = [
         {
@@ -241,6 +241,12 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpen
                                 }
                             })
                             
+                        # Inject API keys based on tool name
+                        if name in ["tavily_search", "sec_full_text_search", "uspto_search"]:
+                            args["api_key"] = tavily_api_key
+                        elif name == "exa_search":
+                            args["api_key"] = exa_api_key
+                            
                         res = await ALL_TOOLS[name](**args)
                         
                         truncated_result = str(res)[:500] + "..." if len(str(res)) > 500 else str(res)
@@ -277,7 +283,7 @@ async def run_discovery_agent(query: str, logs: List[ToolLog], client: AsyncOpen
                 return [content]
     return []
 
-async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None) -> StealthCompanyRecord:
+async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], client: AsyncOpenAI, model_name: str, log_callback: Optional[LogCallback] = None, tavily_api_key: Optional[str] = None, exa_api_key: Optional[str] = None) -> StealthCompanyRecord:
     """Agent 2: Deep Dive. Evaluates a single candidate."""
     messages = [
         {
@@ -330,6 +336,12 @@ async def run_deep_dive_agent(company_name: str, logs: List[ToolLog], client: As
                                     "result": "Running..."
                                 }
                             })
+                            
+                        # Inject API keys based on tool name
+                        if name in ["tavily_search", "sec_full_text_search", "uspto_search"]:
+                            args["api_key"] = tavily_api_key
+                        elif name == "exa_search":
+                            args["api_key"] = exa_api_key
                             
                         res = await ALL_TOOLS[name](**args)
                         
@@ -420,6 +432,8 @@ async def process_orchestrator_stream(
     log_callback: Optional[LogCallback] = None,
     gemini_api_key: Optional[str] = None,
     deepseek_api_key: Optional[str] = None,
+    tavily_api_key: Optional[str] = None,
+    exa_api_key: Optional[str] = None,
     active_model: Optional[str] = None
 ):
     """Agent 0: Orchestrator. The main entry point."""
@@ -447,7 +461,7 @@ async def process_orchestrator_stream(
         await log_callback({"type": "status", "data": f"Starting Discovery Phase using {active_model_name}..."})
 
     # Discovery Phase
-    candidates = await run_discovery_agent(query, logs, active_client, active_model_name, log_callback)
+    candidates = await run_discovery_agent(query, logs, active_client, active_model_name, log_callback, tavily_api_key, exa_api_key)
     
     if log_callback:
         await log_callback({"type": "status", "data": f"Discovery Phase complete. Found {len(candidates)} candidates. Starting Deep Dive Phase..."})
@@ -457,7 +471,7 @@ async def process_orchestrator_stream(
     for candidate in candidates[:3]:
         if log_callback:
             await log_callback({"type": "status", "data": f"Deep diving into candidate: {candidate}"})
-        record = await run_deep_dive_agent(candidate, logs, active_client, active_model_name, log_callback)
+        record = await run_deep_dive_agent(candidate, logs, active_client, active_model_name, log_callback, tavily_api_key, exa_api_key)
         final_records.append(record)
         
     # Send candidates back so frontend can render them before streaming starts

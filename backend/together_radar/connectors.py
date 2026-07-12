@@ -30,12 +30,13 @@ GITHUB_TOKEN = get_clean_env("GITHUB_TOKEN")
 
 SEC_UA = "TogetherRadar research contact@togetherradar.com"
 
-async def tavily_search(query: str, max_results: int = 20, days: int | None = None) -> str:
+async def tavily_search(query: str, max_results: int = 20, days: int | None = None, api_key: str = None) -> str:
     """General-purpose, LLM-ready web search."""
-    if not TAVILY_KEY:
+    key_to_use = api_key or TAVILY_KEY
+    if not key_to_use:
         return "Error: TAVILY_API_KEY not configured."
     payload = {
-        "api_key": TAVILY_KEY,
+        "api_key": key_to_use,
         "query": query,
         "search_depth": "advanced",
         "max_results": max_results,
@@ -54,11 +55,12 @@ async def tavily_search(query: str, max_results: int = 20, days: int | None = No
         logger.error(f"Tavily search failed: {e}")
         return "[]"
 
-async def exa_search(query: str, num_results: int = 20) -> str:
+async def exa_search(query: str, num_results: int = 20, api_key: str = None) -> str:
     """Semantic search for natural language fuzzy queries."""
-    if not EXA_KEY:
+    key_to_use = api_key or EXA_KEY
+    if not key_to_use:
         return "Error: EXA_API_KEY not configured."
-    headers = {"x-api-key": EXA_KEY, "Content-Type": "application/json"}
+    headers = {"x-api-key": key_to_use, "Content-Type": "application/json"}
     payload = {"query": query, "numResults": num_results, "useAutoprompt": True, "contents": {"text": True}}
     try:
         async with httpx.AsyncClient(timeout=15.0) as client:
@@ -83,11 +85,11 @@ async def recent_form_d_filings(count: int = 20) -> str:
         logger.error(f"SEC Atom Feed failed: {e}")
         return "[]"
 
-async def sec_full_text_search(entity: str) -> str:
+async def sec_full_text_search(entity: str, api_key: str = None) -> str:
     """Verifies a specific company name in SEC full text."""
     # The direct EFTS API throws a 403 Forbidden on programmatic access.
     # We use Tavily constrained to SEC Edgar archives.
-    return await tavily_search(f"site:sec.gov/Archives/edgar/data {entity}", max_results=5)
+    return await tavily_search(f"site:sec.gov/Archives/edgar/data {entity}", max_results=5, api_key=api_key)
 
 async def hn_search(query: str, hits_per_page: int = 20) -> str:
     """Searches HN for who's hiring, launches, and stealth mentions."""
@@ -102,9 +104,9 @@ async def hn_search(query: str, hits_per_page: int = 20) -> str:
         logger.error(f"HN search failed: {e}")
         return "[]"
 
-async def uspto_search(entity: str) -> str:
+async def uspto_search(entity: str, api_key: str = None) -> str:
     """Uses Tavily to search USPTO data (since the direct USPTO API is complex and requires specific formatted payloads)."""
-    return await tavily_search(f"site:uspto.report {entity} trademark", max_results=20)
+    return await tavily_search(f"site:uspto.report {entity} trademark", max_results=20, api_key=api_key)
 
 async def cross_check_rdap(domain: str) -> str:
     """Check RDAP for domain registration."""

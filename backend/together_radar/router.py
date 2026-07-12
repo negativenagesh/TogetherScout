@@ -17,6 +17,8 @@ async def radar_chat(
     body: QueryRequest,
     x_gemini_api_key: Optional[str] = Header(None, alias="x-gemini-api-key"),
     x_deepseek_api_key: Optional[str] = Header(None, alias="x-deepseek-api-key"),
+    x_tavily_api_key: Optional[str] = Header(None, alias="x-tavily-api-key"),
+    x_exa_api_key: Optional[str] = Header(None, alias="x-exa-api-key"),
     x_active_model: Optional[str] = Header(None, alias="x-active-model")
 ):
 
@@ -33,6 +35,8 @@ async def radar_chat(
                     log_callback=log_callback,
                     gemini_api_key=x_gemini_api_key,
                     deepseek_api_key=x_deepseek_api_key,
+                    tavily_api_key=x_tavily_api_key,
+                    exa_api_key=x_exa_api_key,
                     active_model=x_active_model
                 )
                 await queue.put({"type": "done"})
