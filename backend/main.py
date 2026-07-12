@@ -4,13 +4,15 @@ from .shared.data import seed_data
 from .accelerator_autopsy.router import router as companies_router
 from .founder_evaluator.router import router as founders_router
 from .together_radar.router import router as radar_router
+from .audit.router import router as audit_router
+from .shared.db import close_db_pool
 
 app = FastAPI(title="TogetherScout API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow any origin (frontend) to connect
-    allow_credentials=False, # Must be False when origin is *
+    allow_origins=["*"], 
+    allow_credentials=False, 
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -23,6 +25,11 @@ async def startup_event():
 app.include_router(companies_router, prefix="/api")
 app.include_router(founders_router, prefix="/api")
 app.include_router(radar_router, prefix="/api/radar")
+app.include_router(audit_router, prefix="/api/audit")
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await close_db_pool()
 
 @app.get("/")
 def read_root():

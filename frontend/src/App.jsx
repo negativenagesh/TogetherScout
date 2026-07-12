@@ -7,6 +7,7 @@ import { API_BASE_URL } from './config';
 import BuyMeCoffee from './components/BuyMeCoffee';
 import TogetherRadar from './components/TogetherRadar';
 import SettingsModal from './components/SettingsModal';
+import { getFingerprint } from './utils/fingerprint';
 
 function Layout({ children }) {
   const location = useLocation();
@@ -54,6 +55,16 @@ function Layout({ children }) {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    // Send tracking data silently in the background
+    const fingerprint = getFingerprint(location.pathname);
+    fetch(`${API_BASE_URL}/api/audit/page_view`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fingerprint)
+    }).catch(() => {}); // Fail silently
+  }, [location.pathname]);
   
   if (isLanding) {
     return <>{children}</>;
