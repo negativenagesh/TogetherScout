@@ -36,3 +36,7 @@ async def shutdown_event():
 @app.get("/")
 def read_root():
     return {"message": "TogetherScout API is running"}
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok"}
