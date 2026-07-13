@@ -83,7 +83,7 @@ export default function Landing() {
       </div>
       
       {/* Top Navigation Bar */}
-      <header className="fixed top-0 left-0 right-0 h-20 md:h-24 z-50 flex items-center justify-between px-6 md:px-8 bg-black/60 backdrop-blur-md border-b border-white/10 transition-all duration-300">
+      <header className="fixed top-0 left-0 right-0 h-20 md:h-24 z-50 flex items-center justify-between px-6 md:px-8 bg-black/30 backdrop-blur-md border-b border-white/10 transition-all duration-300">
         {/* Top Left Logo */}
         <Link to="/" className="text-4xl md:text-5xl font-italiana tracking-tighter text-white hover:opacity-80 transition-opacity drop-shadow-lg">
           TogetherScout
