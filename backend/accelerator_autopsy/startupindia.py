@@ -36,6 +36,34 @@ async def fetch_startupindia_filters() -> Dict[str, Any]:
         ]
     }
 
+STATE_IDS = {
+    "Andaman and Nicobar Islands": "5f48ce592a9bb065cdf9fb1f", "Andhra Pradesh": "5f48ce592a9bb065cdf9fb20",
+    "Arunachal Pradesh": "5f48ce592a9bb065cdf9fb21", "Assam": "5f48ce592a9bb065cdf9fb22",
+    "Bihar": "5f48ce592a9bb065cdf9fb23", "Chandigarh": "5f48ce592a9bb065cdf9fb24",
+    "Chhattisgarh": "5f48ce592a9bb065cdf9fb25", "Dadra and Nagar Haveli and Daman and Diu": "5f48ce592a9bb065cdf9fb42",
+    "Delhi": "5f48ce592a9bb065cdf9fb26", "Goa": "5f48ce592a9bb065cdf9fb27",
+    "Gujarat": "5f48ce592a9bb065cdf9fb28", "Haryana": "5f48ce592a9bb065cdf9fb29",
+    "Himachal Pradesh": "5f48ce592a9bb065cdf9fb2a", "Jammu and Kashmir": "5f48ce592a9bb065cdf9fb2b",
+    "Jharkhand": "5f48ce592a9bb065cdf9fb2c", "Karnataka": "5f48ce592a9bb065cdf9fb2d",
+    "Kerala": "5f48ce592a9bb065cdf9fb2e", "Ladakh": "5f48ce592a9bb065cdf9fb41",
+    "Lakshadweep": "5f48ce592a9bb065cdf9fb2f", "Madhya Pradesh": "5f48ce592a9bb065cdf9fb30",
+    "Maharashtra": "5f48ce592a9bb065cdf9fb31", "Manipur": "5f48ce592a9bb065cdf9fb32",
+    "Meghalaya": "5f48ce592a9bb065cdf9fb33", "Mizoram": "5f48ce592a9bb065cdf9fb34",
+    "Nagaland": "5f48ce592a9bb065cdf9fb35", "Odisha": "5f48ce592a9bb065cdf9fb36",
+    "Puducherry": "5f48ce592a9bb065cdf9fb37", "Punjab": "5f48ce592a9bb065cdf9fb38",
+    "Rajasthan": "5f48ce592a9bb065cdf9fb39", "Sikkim": "5f48ce592a9bb065cdf9fb3a",
+    "Tamil Nadu": "5f48ce592a9bb065cdf9fb3b", "Telangana": "5f48ce592a9bb065cdf9fb3c",
+    "Tripura": "5f48ce592a9bb065cdf9fb3d", "Uttar Pradesh": "5f48ce592a9bb065cdf9fb3f",
+    "Uttarakhand": "5f48ce592a9bb065cdf9fb3e", "West Bengal": "5f48ce592a9bb065cdf9fb40"
+}
+
+STAGE_IDS = {
+    "Ideation": "prototype",
+    "Validation": "validation",
+    "Early Traction": "earlytraction",
+    "Scaling": "scaling"
+}
+
 async def search_startup_india(filters: Dict[str, Any], page: int = 0) -> Dict[str, Any]:
     url = "https://api.startupindia.gov.in/sih/api/noauth/search/profiles"
     
@@ -44,9 +72,9 @@ async def search_startup_india(filters: Dict[str, Any], page: int = 0) -> Dict[s
         "focusSector": False,
         "industries": filters.get("industries", []),
         "sectors": filters.get("sectors", []),
-        "states": filters.get("states", []),
+        "states": [STATE_IDS[s] for s in filters.get("states", []) if s in STATE_IDS] if filters.get("states") else [],
         "cities": filters.get("cities", []),
-        "stages": filters.get("stages", []),
+        "stages": [STAGE_IDS[s] for s in filters.get("stages", []) if s in STAGE_IDS] if filters.get("stages") else [],
         "badges": [],
         "roles": ["Startup"],
         "page": page,
