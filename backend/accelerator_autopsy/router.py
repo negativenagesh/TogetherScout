@@ -43,6 +43,7 @@ async def founders_yc_search(request: Request):
         return response.json()
 
 from .topstartups import scrape_topstartups
+from .startupindia import search_startup_india, fetch_startupindia_filters
 
 @router.post("/topstartups_search")
 async def topstartups_search(request: Request):
@@ -52,6 +53,21 @@ async def topstartups_search(request: Request):
     page = data.get("page", 1)
     
     result = await scrape_topstartups(filters, page)
+    return result
+
+@router.get("/startupindia_filters")
+async def startupindia_filters():
+    """Endpoint to get filters for startup india."""
+    return await fetch_startupindia_filters()
+
+@router.post("/startupindia_search")
+async def startupindia_search(request: Request):
+    """Endpoint to search startup india profiles."""
+    data = await request.json()
+    filters = data.get("filters", {})
+    page = data.get("page", 0)
+    
+    result = await search_startup_india(filters, page)
     return result
 
 @router.post("/{company_id}/classify")

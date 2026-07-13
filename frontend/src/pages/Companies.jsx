@@ -59,7 +59,7 @@ const TS_STAGES = [
 ];
 
 export default function Companies() {
-  const [activeSource, setActiveSource] = useState("YC"); // "YC" | "TopStartups"
+  const [activeSource, setActiveSource] = useState("YC"); // "YC" | "TopStartups" | "StartupIndia"
   
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -87,19 +87,72 @@ export default function Companies() {
     funding_round: []
   });
 
+  const [siFilters, setSiFilters] = useState({
+    dpiitRecognised: false,
+    exempted80IAC: false,
+    industries: [],
+    sectors: [],
+    stages: [],
+    states: [],
+    cities: []
+  });
+  
+  const [siFilterOptions, setSiFilterOptions] = useState({
+    industries: [], sectors: [], stages: [], states: []
+  });
+
   // Reset page when filters, search, or source change
   useEffect(() => {
     setPage(0);
     setCompanies([]);
-  }, [filters, tsFilters, search, activeSource]);
+  }, [filters, tsFilters, siFilters, search, activeSource]);
+
+  useEffect(() => {
+    if (activeSource === "StartupIndia" && siFilterOptions.industries.length === 0) {
+      apiFetch(`/api/companies/startupindia_filters`)
+        .then(r => r.json())
+        .then(data => {
+          setSiFilterOptions(data);
+        })
+        .catch(e => console.error(e));
+    }
+  }, [activeSource]);
 
   useEffect(() => {
     if (activeSource === "YC") {
       fetchYC();
-    } else {
+    } else if (activeSource === "TopStartups") {
       fetchTopStartups();
+    } else if (activeSource === "StartupIndia") {
+      fetchStartupIndia();
     }
-  }, [filters, tsFilters, search, page, activeSource]);
+  }, [filters, tsFilters, siFilters, search, page, activeSource]);
+
+  const fetchStartupIndia = () => {
+    setLoading(true);
+    apiFetch(`/api/companies/startupindia_search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        filters: {
+          query: search,
+          ...siFilters
+        },
+        page: page
+      })
+    })
+      .then(r => r.json())
+      .then(data => {
+        setCompanies(prev => page === 0 ? (data.companies || []) : [...prev, ...(data.companies || [])]);
+        setHasMore(data.has_more);
+        setTotalResults("-");
+        setLoading(false);
+      })
+      .catch(e => {
+        console.error(e);
+        setLoading(false);
+      });
+  };
 
   const fetchYC = () => {
     const facetFilters = [];
@@ -216,6 +269,20 @@ export default function Companies() {
     });
   };
 
+  const toggleSiArrayFilter = (type, value) => {
+    setSiFilters(prev => {
+      const current = prev[type];
+      if (current.includes(value)) {
+        return { ...prev, [type]: current.filter(item => item !== value) };
+      }
+      return { ...prev, [type]: [...current, value] };
+    });
+  };
+
+  const toggleSiBooleanFilter = (type) => {
+    setSiFilters(prev => ({ ...prev, [type]: !prev[type] }));
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       
@@ -259,10 +326,21 @@ export default function Companies() {
           >
             TopStartups.io
           </button>
+          <button
+            onClick={() => setActiveSource("StartupIndia")}
+            className={`px-6 py-2 text-sm font-bold rounded-md transition-all duration-200 tracking-wide ${
+              activeSource === "StartupIndia" 
+              ? "bg-foreground text-background shadow-md" 
+              : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Startup India
+          </button>
         </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+
         {/* Sidebar Filters */}
         <div className="col-span-1 p-4 bg-card rounded-lg border border-border space-y-6 sticky top-4 max-h-[85vh] overflow-y-auto custom-scrollbar">
           
@@ -318,7 +396,7 @@ export default function Companies() {
                 </div>
               </div>
             </>
-          ) : (
+          ) : activeSource === "TopStartups" ? (
             <>
               <div>
                 <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">HQ Location</h3>
@@ -379,7 +457,71 @@ export default function Companies() {
                 </div>
               </div>
             </>
-          )}
+          ) : activeSource === "StartupIndia" ? (
+            <>
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Recognition</h3>
+                <div className="space-y-2 text-sm">
+                  <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" checked={siFilters.dpiitRecognised} onChange={() => toggleSiBooleanFilter('dpiitRecognised')} className="rounded border-gray-600 bg-gray-800" />
+                    <span>DPIIT Recognised</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" checked={siFilters.exempted80IAC} onChange={() => toggleSiBooleanFilter('exempted80IAC')} className="rounded border-gray-600 bg-gray-800" />
+                    <span>80IAC Exempted</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Stage</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {siFilterOptions.stages.map(stage => (
+                    <label key={stage} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={siFilters.stages.includes(stage)} onChange={() => toggleSiArrayFilter('stages', stage)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{stage}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Industry</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {siFilterOptions.industries.map(ind => (
+                    <label key={ind} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={siFilters.industries.includes(ind)} onChange={() => toggleSiArrayFilter('industries', ind)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{ind}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Sector</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {siFilterOptions.sectors.map(sec => (
+                    <label key={sec} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={siFilters.sectors.includes(sec)} onChange={() => toggleSiArrayFilter('sectors', sec)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{sec}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">State</h3>
+                <div className="space-y-2 text-sm max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                  {siFilterOptions.states.map(state => (
+                    <label key={state} className="flex items-center gap-2 cursor-pointer text-muted-foreground hover:text-white transition-colors">
+                      <input type="checkbox" checked={siFilters.states.includes(state)} onChange={() => toggleSiArrayFilter('states', state)} className="rounded border-gray-600 bg-gray-800" />
+                      <span>{state}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : null}
           
         </div>
 
@@ -472,6 +614,16 @@ export default function Companies() {
                         {evaluations[company.id]?.us_india_relevance_flag && (
                           <span className="bg-foreground text-background font-medium text-[10px] uppercase px-2 py-0.5 rounded">
                             US-India
+                          </span>
+                        )}
+                        {activeSource === "StartupIndia" && company.dpiit_recognized && (
+                          <span className="bg-green-600/50 text-green-200 border border-green-500 font-medium text-[10px] uppercase px-2 py-0.5 rounded">
+                            DPIIT
+                          </span>
+                        )}
+                        {activeSource === "StartupIndia" && company["80iac_applied"] && (
+                          <span className="bg-purple-600/50 text-purple-200 border border-purple-500 font-medium text-[10px] uppercase px-2 py-0.5 rounded">
+                            80IAC
                           </span>
                         )}
                       </div>
