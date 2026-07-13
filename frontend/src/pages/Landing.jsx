@@ -1,16 +1,38 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import BuyMeCoffee from '../components/BuyMeCoffee';
+import { API_BASE_URL } from '../config';
 
 export default function Landing() {
   const videoRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [volume, setVolume] = useState(1);
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = 0.8; // Slow down slightly for elegance
+      videoRef.current.playbackRate = 1.0; 
+      videoRef.current.volume = volume;
+      videoRef.current.muted = isMuted;
     }
-  }, []);
+  }, [isMuted, volume]);
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted);
+  };
+
+  const increaseVolume = () => {
+    setVolume(prev => Math.min(1, prev + 0.1));
+    if (isMuted) setIsMuted(false);
+  };
+
+  const decreaseVolume = () => {
+    setVolume(prev => {
+      const newVol = Math.max(0, prev - 0.1);
+      if (newVol <= 0) setIsMuted(true);
+      return newVol;
+    });
+  };
 
   // Animation variants
   const fadeUp = {
@@ -25,6 +47,14 @@ export default function Landing() {
 
   return (
     <div className="relative bg-black text-white selection:bg-white selection:text-black h-screen w-full overflow-y-auto snap-y snap-mandatory scroll-smooth">
+      
+      {/* Top Left Logo */}
+      <div className="fixed top-6 left-6 md:top-8 md:left-8 z-50">
+        <Link to="/" className="text-3xl md:text-4xl font-italiana tracking-tighter text-white hover:opacity-80 transition-opacity drop-shadow-lg">
+          TogetherScout
+        </Link>
+      </div>
+
       {/* Top right Action Icons */}
       <div className="fixed top-6 right-6 md:top-8 md:right-8 z-50 flex items-center gap-4">
         <BuyMeCoffee />
@@ -33,33 +63,17 @@ export default function Landing() {
         </a>
       </div>
 
-      {/* Fixed Video Background */}
-      <div className="fixed inset-0 z-0">
-        <video 
-          ref={videoRef}
-          src="/videos/landing-bg.mp4" 
-          className="w-full h-full object-cover opacity-50 mix-blend-screen"
-          autoPlay 
-          loop 
-          muted 
-          playsInline
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black"></div>
-        {/* Subtle noise/blur filter for text legibility */}
-        <div className="absolute inset-0 backdrop-blur-[2px]"></div>
-      </div>
-
       {/* Main Scrolling Content (Snaps) */}
       <div className="relative z-10 h-full w-full">
         
         {/* HERO SECTION */}
-        <section className="h-screen w-full flex flex-col items-center justify-center px-6 text-center snap-start relative">
+        <section className="min-h-screen w-full flex flex-col items-center justify-start pt-24 pb-12 px-6 text-center snap-start relative">
           <motion.div 
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={staggerContainer}
-            className="flex flex-col items-center"
+            className="flex flex-col items-center w-full max-w-6xl mx-auto h-full"
           >
             <motion.div variants={fadeUp} className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
               <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
@@ -67,19 +81,18 @@ export default function Landing() {
             </motion.div>
 
             <motion.h1 variants={fadeUp} className="font-display text-5xl md:text-8xl font-black tracking-tighter mb-4 leading-[1] text-transparent bg-clip-text bg-gradient-to-br from-white to-gray-500 uppercase">
-              <span className="block font-italiana text-6xl md:text-8xl text-white normal-case tracking-normal mb-4 opacity-90 drop-shadow-2xl">TogetherScout</span>
               Quantify The <br/>
               <span className="font-serif italic text-6xl md:text-9xl text-white font-normal lowercase tracking-normal">Unquantifiable.</span>
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-gray-400 max-w-2xl text-lg md:text-xl mb-12 font-medium">
+            <motion.p variants={fadeUp} className="text-gray-400 max-w-2xl text-lg md:text-xl mb-8 font-medium">
               TogetherScout radically transforms how Venture Capitalists discover and assess elite startups. Powered by AI agents, designed for pure speed.
             </motion.p>
-
-            <motion.div variants={fadeUp}>
+            
+            <motion.div variants={fadeUp} className="mb-10">
               <Link 
                 to="/companies"
-                className="group relative inline-flex items-center justify-center px-12 py-5 font-bold text-black bg-white rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-white"
+                className="group relative inline-flex items-center justify-center px-10 py-4 font-bold text-black bg-white rounded-full overflow-hidden transition-all hover:scale-105 active:scale-95 border border-white"
               >
                 <div className="absolute inset-0 w-full h-full bg-black opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 <span className="relative flex items-center gap-3 text-lg mix-blend-difference text-white uppercase tracking-widest">
@@ -90,11 +103,70 @@ export default function Landing() {
                 </span>
               </Link>
             </motion.div>
+
+            {/* Inline Video Player */}
+            <motion.div variants={fadeUp} className="w-full relative rounded-3xl overflow-hidden border border-white/20 shadow-[0_0_50px_rgba(255,255,255,0.1)] group flex-grow flex">
+              <video 
+                ref={videoRef}
+                src={`${API_BASE_URL}/api/video/launch`}
+                className="w-full h-full object-cover rounded-3xl bg-black"
+                autoPlay 
+                loop 
+                playsInline
+                muted={isMuted}
+              />
+              
+              {/* Custom Controls Overlay */}
+              <div className="absolute bottom-6 right-6 flex items-center gap-3 bg-black/70 backdrop-blur-md p-3 rounded-2xl border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <button 
+                  onClick={toggleMute}
+                  className="p-2 text-white hover:bg-white/20 rounded-full transition-colors flex items-center gap-2"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
+                  {isMuted ? (
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                    </svg>
+                  ) : (
+                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    </svg>
+                  )}
+                </button>
+
+                <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+                <div className="flex flex-col gap-1">
+                  <button onClick={increaseVolume} className="text-white hover:text-gray-300 p-1" title="Volume Up">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                  </button>
+                  <button onClick={decreaseVolume} className="text-white hover:text-gray-300 p-1" title="Volume Down">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                  </button>
+                </div>
+                
+                <div className="w-px h-6 bg-white/20 mx-1"></div>
+                
+                {/* Instagram Button */}
+                <a 
+                  href="https://www.instagram.com/reel/DarqhcSTEPE/" 
+                  target="_blank" 
+                  rel="noreferrer"
+                  className="p-2 text-white hover:bg-white/20 rounded-full transition-colors flex items-center justify-center"
+                  title="Watch on Instagram"
+                >
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" />
+                  </svg>
+                </a>
+              </div>
+            </motion.div>
           </motion.div>
         </section>
 
-        {/* MARQUEE (Snaps slightly before engine) */}
-        <div className="w-full bg-white text-black py-4 overflow-hidden border-y border-gray-800 flex items-center snap-center">
+        {/* MARQUEE */}
+        <div className="w-full bg-white text-black py-4 overflow-hidden border-y border-gray-800 flex items-center snap-center relative z-20">
           <div className="whitespace-nowrap animate-marquee font-display font-black text-2xl uppercase tracking-widest flex w-[200%]">
             <span className="w-1/2">AI-DRIVEN THESIS • 10-POINT METRIC SCORING • YC BATCH ANALYSIS • DEEP WEB SCRAPING • REAL-TIME EVALUATIONS • </span>
             <span className="w-1/2">AI-DRIVEN THESIS • 10-POINT METRIC SCORING • YC BATCH ANALYSIS • DEEP WEB SCRAPING • REAL-TIME EVALUATIONS • </span>
@@ -102,7 +174,7 @@ export default function Landing() {
         </div>
 
         {/* SECTION 1: The Engine */}
-        <section className="h-screen w-full flex items-center justify-center py-24 px-6 md:px-20 max-w-7xl mx-auto snap-start">
+        <section className="min-h-screen w-full flex items-center justify-center py-24 px-6 md:px-20 max-w-7xl mx-auto snap-start">
           <motion.div 
             initial="hidden"
             whileInView="visible"
