@@ -84,7 +84,7 @@ async def search_startup_india(filters: Dict[str, Any], page: int = 0) -> Dict[s
                         "name": item.get("name", "Unknown Startup"),
                         "slug": item.get("id", ""),
                         "website": "",
-                        "small_logo_thumb_url": f"https://www.startupindia.gov.in/network/public/profile/image/show/{item.get('pic')}" if item.get("pic") else "",
+                        "small_logo_thumb_url": f"https://api.startupindia.gov.in/sih/api/file/user/image/Startup?fileName={item.get('pic')}" if item.get("pic") else "",
                         "one_liner": ", ".join(item.get("industries", [])),
                         "long_description": f"DPIIT Recognised: {item.get('dippRecognitionStatus') == 'RECOGNISED'}",
                         "industry": item.get("industries", [""])[0] if item.get("industries") else "",
